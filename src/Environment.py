@@ -35,9 +35,14 @@ class Environment:
                 projectile.update(time_step=time_step, new_target=projectile.target)
 
             if projectile.exploded:
+
+                self.exploded_not_cleared_projectiles.append(projectile.id)
+
                 for target in self.targets.values():  # ракеты не связаны напрямую с целями, поэтому ищем вручную
                     if dist(target.position, projectile.position) < projectile.explosion_distance:
                         target.destroyed = True
+                        self.exploded_not_cleared_targets.append(target.id)
+
 
     def get_targets(self):
 
