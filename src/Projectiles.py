@@ -1,6 +1,7 @@
 from FlyingObject import FlyingObject
 import numpy as np
 from typing import Union
+from misc import *
 
 
 def calculate_velocity(position, target, max_velocity):
@@ -36,7 +37,7 @@ class Projectile(FlyingObject):
 
         super()._update_position(time_step)
 
-        if np.sqrt(np.sum((self.position - self.target)**2)) < self.explosion_distance:
+        if dist(self.target, self.position) < self.explosion_distance:
             self.exploded = True
 
 
@@ -51,8 +52,12 @@ class GuidedMissile(Projectile):
         self.target = target if isinstance(target, np.ndarray) else np.array(target, dtype=np.float64)
         self.velocity = calculate_velocity(self.position, self.target, self.max_velocity)
 
+    def update(self, **kwargs):
+        super().update(time_step=kwargs['time_step'])
+        self.update_target(kwargs['new_target'])
 
-class HomingMissile(Projectile):
+
+class PreemptiveMissile(Projectile):
 
     def __init__(self, preemption: float, **kwargs):
 
@@ -67,3 +72,10 @@ class HomingMissile(Projectile):
         self.velocity = calculate_velocity(self.position,
                                            self.target + self.preemption * (self.target - self.prev_target),
                                            self.max_velocity)
+
+
+projectile_typename_to_class = {
+    'simple projectile': Projectile,
+    'guided missile': GuidedMissile,
+    'preemptive missile': PreemptiveMissile
+}

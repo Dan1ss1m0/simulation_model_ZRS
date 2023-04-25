@@ -18,7 +18,7 @@ class TargetAccelerating(Target):
         super().__init__(**kwargs)
         self.acceleration = (acceleration if isinstance(acceleration, np.ndarray) else np.array(acceleration, dtype=np.float64))
 
-        self.update_functions.append(self._update_velocity)
+        self.update_time_only_functions.append(self._update_velocity)
 
     def _update_position(self, time_step: float):
 
@@ -57,3 +57,8 @@ class TargetCircled(Target):
         self.position[2] = self.R * np.sin(self.angle) + self.center[2]
 
 
+target_typename_to_class = {
+    'simple target': Target,
+    'accelerating target': TargetAccelerating,
+    'circled target': TargetCircled
+}
