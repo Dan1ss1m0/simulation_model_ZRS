@@ -1,7 +1,12 @@
 import random as rdm
 import math as mth
-omega_az, omega_el, Rmax = 100, 100, 1000
-ray_width = 1.5 / 180 * mth.pi
+#PARAMETRS#
+omega_az, omega_el, Rmax = 100, 100, 1000  #omega_az, omega_el - angular speed of the ray, Rmax - maximum distance of scanning
+ray_width = 1.5 / 180 * mth.pi  #width of the ray
+Eps = 10 #minimal distance between plane and missle
+
+#CLASSES#
+
 class ray(object):
     def __init__(self):
         self.omega_az = omega_az
@@ -16,12 +21,13 @@ class ray(object):
 
 
 class tracking_ray(object):
-    def __init__(self, phi, teta, id):
+    def __init__(self, phi, teta, t_id, m_id):
         self.phi = phi
         self.teta = teta
         self.err_phi = 0
         self.err_teta
-        self.target_id = id
+        self.target_id = t_id
+        self.missle_id = m_id
     def upd_coord(self,d_phi, d_teta):
         self.phi = self.phi + d_phi + (d_phi - self.err_phi) *0.1
         self.err_phi = d_phi
@@ -54,7 +60,7 @@ class tracking_ray(object):
      def distance(target, x,y,z):
          dist = mth.sqrt((target.x - x)**2 + (target.y - y)**2 + (target.z - z)**2)
          return dist
-     def do_step(self, targets, PBU):
+     def do_step(self, targets, PBU,missles):
          if(self.state == 0):
              for r in range(0,Rmax,5):
                  for i in range(targets.len):
@@ -62,9 +68,13 @@ class tracking_ray(object):
                          PBU.check(self.to_xyz(r))
              self.rays[0].upd_coord()
          else:
+             m_id = self.rays[self.state].missle_id  # its not actually true,  index = foo(id) or its may be not true that index == id
              id = self.rays[self.state].target_id #its not actually true,  index = foo(id) or its may be not true that index == id
-             if(targets[id].is_deleted == True or self.distance(targets[id], self.x, self.y, self.z) > Rmax):
+             if(self.distance(targets[id],missles[m_id].get_xyz) < Eps or self.distance(targets[id], self.x, self.y, self.z) > Rmax):
                  self.del_ray(self.state)
+                 missles[m_id].del_missle()
+                 if (self.distance(targets[id], missles[m_id].get_xyz) < Eps):
+                     targets[id].del_target
              else:
                  Tx,Ty,Tz = self.to_xyz(self,10)
                  Tx = Tx - self.x
@@ -76,6 +86,8 @@ class tracking_ray(object):
                  d_phi = mth.sign(Tx*Vy - Ty*Vx)*mth.acos((Tx*Vx+Ty*Vy)/(mth.sqrt(Tx**2+Ty**2)*mth.sqrt(Vx**2+Vy**2)))
                  d_teta = mth.acos(targets[id]/mth.sqrt(Vx**2 + Vy**2 + Vz**2)) - self.rays[self.state].teta
                  self.rays[self.state].upd_coord(d_phi, d_teta)
+
+                 missles[m_id].upd(self.to_xyz(self,10))
 
          self.state = (self.state + 1) % self.rays.len()
 
