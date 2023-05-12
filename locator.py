@@ -2,11 +2,13 @@ import random as rdm
 import math as mth
 
 # PARAMETRS#
-omega_az, omega_el, Rmax = 0.05, 0.05, 100  # omega_az, omega_el - angular speed of the ray, Rmax - maximum distance of scanning
+T = 0.005 #time step 0.1 second
+omega_az, omega_el, Rmax = 10, 5, 1000  # omega_az, omega_el - angular speed of the ray, Rmax - maximum distance of scanning
 dr = 1
-ray_width = 2 / 180 * mth.pi  # width of the ray
+ray_width = 4 / 180 * mth.pi  # width of the ray
 Eps = 10  # minimal distance between plane and missle
-
+omega_el = omega_el * T
+omega_az = omega_az * T
 def sign(x):
     if x>0:
         return 1
@@ -21,17 +23,16 @@ class ray(object):
         self.omega_az = omega_az
         self.omega_el = omega_el
         self.phi = rdm.random() * 2 * mth.pi
-        #self.teta = rdm.random() * mth.pi / 2
-        self.teta = 0
+        self.teta = rdm.random() * mth.pi / 2
         self.Rmax = Rmax
 
     def upd_coord(self):
         self.phi = (self.phi + self.omega_az)
+        self.teta = (self.teta + self.omega_el)
         if self.phi > 2*mth.pi:
-            #self.teta = (self.teta + self.omega_el)
             self.phi = self.phi % 2*mth.pi
-            #if self.phi >  mth.pi / 2:
-                #self.teta =  self.teta % mth.pi / 2
+        if self.phi >  (mth.pi / 2):
+            self.teta =  self.teta % (mth.pi / 2)
 
 
 
@@ -48,7 +49,7 @@ class tracking_ray(object):
     def upd_coord(self, d_phi, d_teta):
         self.phi = self.phi + 0.5*d_phi + (d_phi - self.err_phi) * 0
         self.err_phi = d_phi
-        self.teta = self.teta + d_teta + (d_teta - self.err_teta) * 0.001
+        self.teta = self.teta + 0.5*d_teta + (d_teta - self.err_teta) * 0
         self.err_teta = d_teta
 
 
@@ -57,6 +58,7 @@ class locator(object):
     state = 0  # state of locator, represents the current ray
     curr_ray_x = []
     curr_ray_y = []
+    curr_ray_z = []
 
     def __init__(self, x, y, z):
         self.x = x
@@ -85,25 +87,27 @@ class locator(object):
     def do_step(self, targets, PBU, missles):
         self.curr_ray_x = []
         self.curr_ray_y = []
+        self.curr_ray_z = []
         if (self.state == 0):
             flag = False
-            for r in range(0, Rmax*10, dr):
+            for r in range(0, Rmax, dr):
                 for i in range(len(targets)):
-                    x,y,z  = self.to_xyz(r*0.1) #r*0.1 - temporary solution to demonstrate graph
+                    x,y,z  = self.to_xyz(r) #r*0.1 - temporary solution to demonstrate graph
                     self.curr_ray_x.append(x)
                     self.curr_ray_y.append(y)
-                    print((self.distance(targets[i], x, y, z)), mth.sqrt((r * mth.sin(ray_width))**2 +(2*dr*0.1)**2))
-                    if (self.distance(targets[i], x, y, z) < 1.1*mth.sqrt((r * mth.sin(ray_width))**2 +(2*dr*0.1)**2)):
+                    self.curr_ray_z.append(z)
+                    if (self.distance(targets[i], x, y, z) < 1.1*mth.sqrt((r * mth.sin(ray_width))**2 +(2*dr)**2)):
                         PBU.check()
                         flag = True
                         break
                 if flag == True:
                     break
-
+            print(targets[i].z, z)
             self.rays[0].upd_coord()
         else:
             self.curr_ray_x = []
             self.curr_ray_y = []
+            self.curr_ray_z = []
             m_id = self.rays[
                 self.state].missle_id  # its not actually true,  index = foo(id) or its may be not true that index == id
             id = self.rays[
@@ -124,19 +128,20 @@ class locator(object):
                 Vz = targets[id].z - self.z
                 d_phi =  mth.acos(
                     (Tx * Vx + Ty * Vy) / (mth.sqrt(Tx ** 2 + Ty ** 2) * mth.sqrt(Vx ** 2 + Vy ** 2)))
-                d_teta = mth.asin(targets[id].z / mth.sqrt(Vx ** 2 + Vy ** 2 + Vz ** 2)) - self.rays[self.state].teta
+                d_teta = mth.asin((targets[id].z - self.z) / mth.sqrt(Vx ** 2 + Vy ** 2 + Vz ** 2)) - self.rays[self.state].teta
                 self.rays[self.state].upd_coord(d_phi, d_teta)
-                for r in range(0, Rmax * 10, dr):
-                    x, y, z = self.to_xyz(r*0.1)
-                    if (self.distance(targets[id], x, y, z) < 1.1*mth.sqrt((r * mth.sin(ray_width))**2 +(2*dr*0.1)**2)):
+                for r in range(0, Rmax , dr):
+                    x, y, z = self.to_xyz(r)
+                    if (self.distance(targets[id], x, y, z) < 1.1*mth.sqrt((r * mth.sin(ray_width))**2 +(2*dr)**2)):
                         print('yeah')
                         break
                 missles[m_id].update(x,y,z)
-                for r in range(0, Rmax, 1):
-                    for i in range(len(targets)):
-                        x, y, z = self.to_xyz(r * 0.1)  # r*0.1 - temporary solution to demonstrate graph
-                        self.curr_ray_x.append(x)
-                        self.curr_ray_y.append(y)
+                for r in range(0, Rmax, dr):
+                    x, y, z = self.to_xyz(r)  # r*0.1 - temporary solution to demonstrate graph
+                    self.curr_ray_x.append(x)
+                    self.curr_ray_y.append(y)
+                    self.curr_ray_z.append(z)
+                print(mth.asin((targets[id].z - self.z) / mth.sqrt(Vx ** 2 + Vy ** 2 + Vz ** 2)),  self.rays[self.state].teta,z,targets[id].z)
                 #print(self.state)
                 #print(self.rays[self.state].phi)
                 #print(self.rays[self.state].teta)

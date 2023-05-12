@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import locator as loc
-T = 0.1
+T = 0.005
 class CC(object):
     def __init__(self):
         """Constructor"""
@@ -21,7 +21,7 @@ class plane(object):
         self.y0 = y0
         self.x = self.x0
         self.y = self.y0
-        self.z = 0
+        self.z = 100
 
     def upd(self):
         self.x0 = self.x0 + self.Vx * T
@@ -29,7 +29,7 @@ class plane(object):
         self.x = self.x0
         self.y = self.y0
     def update(self,x,y,z):
-        print('ok')
+        print('\n')
     def get_xyz(self):
         return self.x,self.y,self.z
 
@@ -70,34 +70,44 @@ plt.close()
 targ = []
 missle = []
 PBU = CC()
-mis1 = plane(1,-1,1,10)
-pl1 = plane(0.1,0,1,1)
+mis1 = plane(222,-500,50,50)
+pl1 = plane(400,0,500,500)
 targ.append(pl1)
 missle.append(mis1)
-fig, ax = plt.subplots(1, 1)
+fig, (ax,ax1)  = plt.subplots(1,2)
+
 fig.set_size_inches(10, 10)
 
-A = loc.locator(1, 2, 0)
+A = loc.locator(1000, 1000, 0)
 def animate(i):
     #plt.waitforbuttonpress()
     ax.clear()
+    ax1.clear()
+    ax1.grid(True)
     ax.grid(True)
     A.do_step(targ, PBU, missle)    # Plot that point using the x and y coordinates
     ax.plot(pl1.x0, pl1.y0, color='green',
             label='original', marker='o')
-    ax.plot(mis1.x0, mis1.y0, color='red',
+    ax1.plot(pl1.x0, pl1.z, color='green',
+            label='original', marker='o')
+    ax.plot(mis1.x0, mis1.z, color='red',
             label='original', marker='4')
     ax.plot(A.x, A.y, color='blue',
+            label='original', marker='s')
+    ax1.plot(A.x, A.z, color='blue',
             label='original', marker='s')
     xr = A.curr_ray_x
     yr = A.curr_ray_y
     ax.plot(A.curr_ray_x, A.curr_ray_y)
+    ax1.plot(A.curr_ray_x, A.curr_ray_z)
     pl1.upd()
     mis1.upd()
-    ax.set_xlim([0, 10])
-    ax.set_ylim([0, 10])
-ani = animation.FuncAnimation(fig, animate, 200,
-                    interval=50, repeat=False)
+    ax.set_xlim([0, 10000])
+    ax.set_ylim([0, 10000])
+    ax1.set_xlim([0, 10000])
+    ax1.set_ylim([0, 10000])
+ani = animation.FuncAnimation(fig, animate, 600,
+                    interval=100, repeat=False)
 plt.show()
 plt.close()
 
