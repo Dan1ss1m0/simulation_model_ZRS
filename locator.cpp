@@ -16,6 +16,7 @@ position ray::to_coordinates(float R){
     tmp.y = pos.y + R*cos(M_PI/180*teta)*sin(M_PI/180*phi);
     tmp.z = pos.z + R*sin(M_PI/180*teta);
 }
+
 void ray::update_angles(vector <positons> targets, ControlCenter& PBU){
     phi = phi + 5;
     if (phi > 360){
@@ -30,6 +31,7 @@ void ray::update_angles(vector <positons> targets, ControlCenter& PBU){
         position tmp = to_coordinates(r);
         for (int i = 0; i < targets.size(); i++){
             if (dist(tmp, targets[i]) > r*sin(M_PI/180*width)){
+
                 PBU.add_target(tmp , i);
             }
         }
@@ -37,7 +39,9 @@ void ray::update_angles(vector <positons> targets, ControlCenter& PBU){
 
 }
 
+
 void tracking_ray::update_angles(vector<positons> targets, ControlCenter &PBU){
+
    float d_phi = -(delta_phi - get_delta_phi(targets[target_id]))*d;
    phi = phi + p*delta_phi + d_phi;
    float d_teta =  -(delta_teta - get_delta_teta(targets[target_id]))*d;
