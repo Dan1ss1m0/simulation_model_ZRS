@@ -13,7 +13,7 @@ environment.add_target('complex', **dict(
     trajectory_arguments=dict(
         position=(-1, 0, 0),
         trajectories=[[2, 'uniform', {'position': None, 'velocity': (-1, -1, -1)}],
-                      [2, 'uniform', {'position': None, 'velocity': (2, 0, 1)}],
+                      [2, 'uniform', {'position': None, 'velocity': (2, 0, 3)}],
                       [4, 'circled', {'position': None, 'center': (0, 0, 0), 'velocity': (-1, 0, 1)}],
                       [3, 'accelerating', {'position': None, 'velocity': None, 'acceleration': (1, 0, 1)}]]
     ),
@@ -30,7 +30,7 @@ for projectile_id, target in enumerate(environment.targets.values()):
         id=projectile_id,
         trigger_distance=0.1,
         explosion_range=0.3,
-        max_velocity=5
+        max_velocity=1
     ))
 
     projectile_id_to_target_id[projectile_id] = target.id
