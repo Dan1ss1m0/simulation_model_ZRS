@@ -1,4 +1,3 @@
-from FlyingObject import FlyingObject
 import numpy as np
 from typing import Union
 from misc import *
@@ -11,34 +10,43 @@ def calculate_velocity(position, target, max_velocity):
     return max_velocity * (target - position) / r
 
 
-class Projectile(FlyingObject):
+class Projectile:
 
     def __init__(self, position: Union[list, tuple, np.ndarray],
                  target: Union[list, tuple, np.ndarray],
                  id: int,
-                 explosion_distance: float,
+                 trigger_distance: float,
+                 explosion_range: float,
                  max_velocity: float):
 
-        super().__init__(position=position, velocity=(0, 0, 0))
-
+        self.position = position
+        self.velocity = np.array([0, 0, 0])
         self.id = id
         self.target = target if isinstance(target, np.ndarray) else np.array(target, dtype=np.float64)
         self.max_velocity = max_velocity
 
         self.velocity = calculate_velocity(self.position, self.target, self.max_velocity)
 
-        self.explosion_distance = explosion_distance
+        self.trigger_distance = trigger_distance
+        self.explosion_range = explosion_range
         self.exploded = False
+
+        self.update_functions = [self._update_position]
 
     def _update_position(self, time_step: float):
 
         if self.exploded:
             return
 
-        super()._update_position(time_step)
+        self.position += self.velocity * time_step
 
-        if dist(self.target, self.position) < self.explosion_distance:
+        if dist(self.target, self.position) < self.trigger_distance:
             self.exploded = True
+
+    def update(self, **kwargs):
+
+        for func in self.update_functions:
+            func(**kwargs)
 
 
 class GuidedMissile(Projectile):
@@ -53,8 +61,8 @@ class GuidedMissile(Projectile):
         self.velocity = calculate_velocity(self.position, self.target, self.max_velocity)
 
     def update(self, **kwargs):
-        super().update(time_step=kwargs['time_step'])
         self.update_target(kwargs['new_target'])
+        super().update(time_step=kwargs['time_step'])
 
 
 class PreemptiveMissile(Projectile):
@@ -64,7 +72,6 @@ class PreemptiveMissile(Projectile):
         super().__init__(**kwargs)
         self.prev_target = None
         self.preemption = preemption
-        print(self.target)
 
     def update_target(self, target):
         self.prev_target = self.target
@@ -73,6 +80,9 @@ class PreemptiveMissile(Projectile):
                                            self.target + self.preemption * (self.target - self.prev_target),
                                            self.max_velocity)
 
+    def update(self, **kwargs):
+        self.update_target(kwargs['new_target'])
+        super().update(time_step=kwargs['time_step'])
 
 projectile_typename_to_class = {
     'simple projectile': Projectile,

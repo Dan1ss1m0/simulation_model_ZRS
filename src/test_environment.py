@@ -1,14 +1,7 @@
 from Environment import Environment
 import numpy as np
-import logging
 import yaml
 
-
-logging.basicConfig(level=logging.INFO, filename="environment.log",filemode="w",
-                    format="%(asctime)s %(levelname)s: %(message)s")
-
-# сейчас config-file тестировался для модуля Environment, далее в нем будут содержаться поля каждого модуля
-# и в каждый модуль будет приходить часть соотвествующая ему.
 with open("./config.yaml", "r") as yamlfile:
     config = yaml.load(yamlfile, Loader=yaml.FullLoader)
 
@@ -42,4 +35,10 @@ for i in range(200):
     if not environment.projectiles or not environment.targets:
 
         break
+
+
+class Locator:
+
+    targets = {1: np.array([1, 1, 1]), }
+
 
