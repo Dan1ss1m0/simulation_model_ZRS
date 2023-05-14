@@ -1,6 +1,8 @@
 import random as rdm
 import math as mth
-
+from misc import *
+from Targets import Target
+from Launcher import *
 # PARAMETRS#
 T = 0.005 #time step 0.1 second
 omega_az, omega_el, Rmax = 10, 5, 1000  # omega_az, omega_el - angular speed of the ray, Rmax - maximum distance of scanning
@@ -9,6 +11,12 @@ ray_width = 4 / 180 * mth.pi  # width of the ray
 Eps = 10  # minimal distance between plane and missle
 omega_el = omega_el * T
 omega_az = omega_az * T
+def find(id, list):
+    tmp = -1
+    for i in range(len(list)):
+        if list[i].id == id:
+            tmp = i
+    return tmp
 def sign(x):
     if x>0:
         return 1
@@ -38,13 +46,14 @@ class ray(object):
 
 
 class tracking_ray(object):
-    def __init__(self, phi, teta, t_id, m_id):
+    def __init__(self, phi, teta, t_id, m_id, pbu_target_id):
         self.phi = phi
         self.teta = teta
         self.err_phi = 0
         self.err_teta = 0
         self.target_id = t_id
         self.missle_id = m_id
+        self.pbu_target_id = pbu_target_id
 
     def upd_coord(self, d_phi, d_teta):
         self.phi = self.phi + 0.5*d_phi + (d_phi - self.err_phi) * 0
@@ -67,12 +76,13 @@ class locator(object):
         self.rays.append(ray())
         self.state = 0
 
-    def del_ray(self, index):
+    def del_ray(self, index, PBU):
+        PBU.del_target(self.rays[index].pbu_target_id)
         self.rays.pop(index)
         self.state = self.state - 1  # is it necessary?
 
-    def add_ray(self, id, phi, teta, m_id):
-        self.rays.append(tracking_ray(phi, teta, id, m_id))
+    def add_ray(self, phi, teta, m_id, id, pbu_target_id):
+        self.rays.append(tracking_ray(phi, teta, id, m_id, pbu_target_id))
 
     def to_xyz(self, r):
         x = self.x + r * mth.cos(self.rays[self.state].phi) * mth.cos(self.rays[self.state].teta)
@@ -92,33 +102,31 @@ class locator(object):
             flag = False
             for r in range(0, Rmax, dr):
                 for i in range(len(targets)):
-                    x,y,z  = self.to_xyz(r) #r*0.1 - temporary solution to demonstrate graph
+                    x,y,z  = self.to_xyz(r) 
                     self.curr_ray_x.append(x)
                     self.curr_ray_y.append(y)
                     self.curr_ray_z.append(z)
+                    pos = np.array([x,y,z])
                     if (self.distance(targets[i], x, y, z) < 1.1*mth.sqrt((r * mth.sin(ray_width))**2 +(2*dr)**2)):
-                        PBU.check()
+                        pbu_target_id, mis_id = PBU.add_target(pos)
+                        if pbu_target_id !=-1:
+                            self.add_ray(self.rays[self.state].phi, self.rays[self.state].teta, mis_id,targets[i].id, pbu_target_id)
                         flag = True
                         break
                 if flag == True:
                     break
-            print(targets[i].z, z)
             self.rays[0].upd_coord()
         else:
             self.curr_ray_x = []
             self.curr_ray_y = []
             self.curr_ray_z = []
-            m_id = self.rays[
-                self.state].missle_id  # its not actually true,  index = foo(id) or its may be not true that index == id
-            id = self.rays[
-                self.state].target_id  # its not actually true,  index = foo(id) or its may be not true that index == id
-            x,y,z = missles[m_id].get_xyz()
-            if (True) :
-                #self.del_ray(self.state)
-                #missles[m_id].del_missle()
-                #if (self.distance(targets[id], missles[m_id].get_xyz) < Eps):
-                    #targets[id].del_target
-            #else:
+
+            m_id = find(self.rays[
+                self.state].missle_id, missles)
+            id = find(self.rays[
+                self.state].target_id, targets)
+            if (m_id!=-1 and id !=-1):
+                [x, y, z] = missles[m_id].position()
                 Tx, Ty, Tz = self.to_xyz(100)
                 Tx = Tx - self.x
                 Ty = Ty - self.y
@@ -126,26 +134,23 @@ class locator(object):
                 Vx = targets[id].x - self.x
                 Vy = targets[id].y - self.y
                 Vz = targets[id].z - self.z
-                d_phi =  mth.acos(
+                d_phi = mth.acos(
                     (Tx * Vx + Ty * Vy) / (mth.sqrt(Tx ** 2 + Ty ** 2) * mth.sqrt(Vx ** 2 + Vy ** 2)))
-                d_teta = mth.asin((targets[id].z - self.z) / mth.sqrt(Vx ** 2 + Vy ** 2 + Vz ** 2)) - self.rays[self.state].teta
+                d_teta = mth.asin((targets[id].z - self.z) / mth.sqrt(Vx ** 2 + Vy ** 2 + Vz ** 2)) - self.rays[
+                    self.state].teta
                 self.rays[self.state].upd_coord(d_phi, d_teta)
-                for r in range(0, Rmax , dr):
-                    x, y, z = self.to_xyz(r)
-                    if (self.distance(targets[id], x, y, z) < 1.1*mth.sqrt((r * mth.sin(ray_width))**2 +(2*dr)**2)):
-                        print('yeah')
-                        break
-                missles[m_id].update(x,y,z)
                 for r in range(0, Rmax, dr):
-                    x, y, z = self.to_xyz(r)  # r*0.1 - temporary solution to demonstrate graph
+                    x, y, z = self.to_xyz(r)
+                    if (self.distance(targets[id], x, y, z) < 1.1 * mth.sqrt(
+                            (r * mth.sin(ray_width)) ** 2 + (2 * dr) ** 2)):
+                        break
+                missles[m_id].update(T, np.array([x, y, z]))
+                for r in range(0, Rmax, dr):
+                    x, y, z = self.to_xyz(r)
                     self.curr_ray_x.append(x)
                     self.curr_ray_y.append(y)
                     self.curr_ray_z.append(z)
-                print(mth.asin((targets[id].z - self.z) / mth.sqrt(Vx ** 2 + Vy ** 2 + Vz ** 2)),  self.rays[self.state].teta,z,targets[id].z)
-                #print(self.state)
-                #print(self.rays[self.state].phi)
-                #print(self.rays[self.state].teta)
-                #print(d_phi)
-                #print(d_teta)
+            else:
+                self.del_ray(self.state, PBU)
 
-        #self.state = (self.state + 1) % len(self.rays)
+        self.state = (self.state + 1) % len(self.rays)
