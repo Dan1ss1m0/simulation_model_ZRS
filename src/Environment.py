@@ -42,11 +42,11 @@ class Environment:
                 self.exploded_not_cleared_projectiles.append(projectile.id)
 
                 for target in self.targets.values():  # ракеты не связаны напрямую с целями, поэтому ищем вручную
-                    if dist(target.position, projectile.position) < projectile.explosion_distance:
+                    if dist(target.position, projectile.position) < projectile.explosion_range:
                         target.destroyed = True
                         self.exploded_not_cleared_targets.append(target.id)
 
-        self.clear_exploded()
+        # self.clear_exploded()
 
     def get_targets(self):
 
@@ -62,7 +62,8 @@ class Environment:
             return False
 
         try:
-            trajectory = trajectory_typename_to_class[trajectory_type](kwargs['trajectory_arguments'])
+            # print(kwargs['trajectory_arguments'])
+            trajectory = trajectory_typename_to_class[trajectory_type](**kwargs['trajectory_arguments'])
             self.targets[kwargs['id']] = Target(kwargs['id'], trajectory)
 
         except Exception as e:

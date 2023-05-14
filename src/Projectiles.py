@@ -15,7 +15,8 @@ class Projectile:
     def __init__(self, position: Union[list, tuple, np.ndarray],
                  target: Union[list, tuple, np.ndarray],
                  id: int,
-                 explosion_distance: float,
+                 trigger_distance: float,
+                 explosion_range: float,
                  max_velocity: float):
 
         self.position = position
@@ -26,7 +27,8 @@ class Projectile:
 
         self.velocity = calculate_velocity(self.position, self.target, self.max_velocity)
 
-        self.explosion_distance = explosion_distance
+        self.trigger_distance = trigger_distance
+        self.explosion_range = explosion_range
         self.exploded = False
 
         self.update_functions = [self._update_position]
@@ -38,7 +40,7 @@ class Projectile:
 
         self.position += self.velocity * time_step
 
-        if dist(self.target, self.position) < self.explosion_distance:
+        if dist(self.target, self.position) < self.trigger_distance:
             self.exploded = True
 
     def update(self, **kwargs):
@@ -58,6 +60,10 @@ class GuidedMissile(Projectile):
         self.target = target if isinstance(target, np.ndarray) else np.array(target, dtype=np.float64)
         self.velocity = calculate_velocity(self.position, self.target, self.max_velocity)
 
+    def update(self, **kwargs):
+        self.update_target(kwargs['new_target'])
+        super().update(time_step=kwargs['time_step'])
+
 
 class PreemptiveMissile(Projectile):
 
@@ -74,6 +80,9 @@ class PreemptiveMissile(Projectile):
                                            self.target + self.preemption * (self.target - self.prev_target),
                                            self.max_velocity)
 
+    def update(self, **kwargs):
+        self.update_target(kwargs['new_target'])
+        super().update(time_step=kwargs['time_step'])
 
 projectile_typename_to_class = {
     'simple projectile': Projectile,
