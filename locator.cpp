@@ -16,7 +16,8 @@ position ray::to_coordinates(float R){
     tmp.y = pos.y + R*cos(M_PI/180*teta)*sin(M_PI/180*phi);
     tmp.z = pos.z + R*sin(M_PI/180*teta);
 }
-void ray::update_angles(vector <positons> targets, ControlCenter& PBU, locator& that_lacator){
+
+void ray::update_angles(vector <positons> targets, ControlCenter& PBU){
     phi = phi + 5;
     if (phi > 360){
         teta += 5;
@@ -30,15 +31,17 @@ void ray::update_angles(vector <positons> targets, ControlCenter& PBU, locator& 
         position tmp = to_coordinates(r);
         for (int i = 0; i < targets.size(); i++){
             if (dist(tmp, targets[i]) > r*sin(M_PI/180*width)){
-                PBU.add_target(tmp,i,that_lacator.locator_id);
-                that_locator.add_ray(i, phi, teta);
+
+                PBU.add_target(tmp , i);
             }
         }
     }
 
 }
 
-void tracking_ray::update_angles(vector<positons> targets, ControlCenter &PBU, locator& that_lacator){
+
+void tracking_ray::update_angles(vector<positons> targets, ControlCenter &PBU){
+
    float d_phi = -(delta_phi - get_delta_phi(targets[target_id]))*d;
    phi = phi + p*delta_phi + d_phi;
    float d_teta =  -(delta_teta - get_delta_teta(targets[target_id]))*d;
@@ -68,17 +71,4 @@ float tracking_ray::get_teta(position target_position){
     position target = target_position - pos;
     delta_phi = acos(target.z/scale(target))*180/M_PI - teta;
     return delta_phi;
-}
-void locator::add_ray(int i, float p, float t){
-    //we must add checking
-    ray_ammpount++;
-    rays[available_places[0]]  = new tracking_ray(p, t, i);
-    available_places.erase(vec.begin());
-}
-void locator::del_ray(int n){
-    delete  rays[n];
-    available_places.push_back(n);
-    sort(available_places.begin(), available_places.end());
-
-
 }

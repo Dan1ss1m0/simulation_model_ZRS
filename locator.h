@@ -14,7 +14,8 @@ public:
        this->teta = t;
    }
    position pos;
-   virtual void update_angles(vector <positon> targets, ControlCenter& PBU, locator& that_lacator);
+
+   virtual void update_angles(vector <positon> targets, ControlCenter& PBU); //should be update_angles(targets_pool, &pbu);
    float get_teta();
    float get_phi();
 };
@@ -24,7 +25,8 @@ public:
     float get_delta_phi();  //it CALCULATES delta_phi
     float get_delta_teta();
     tracking_ray(int p, int t, int target_id):ray(p,t){ this->target_id = target_id;}
-    void update_angles(vector <positons> targets, ControlCenter& PBU, locator& that_lacator);
+
+    void update_angles(vector <positons> targets, ControlCenter& PBU);
 private:
     float p = 1;     //propoertional coefficent
     float d = 0.01;  //differentional coefficient
@@ -38,13 +40,13 @@ class locator
 public:
     position pos;
     locator(float x, float y, float z);
-    void add_ray(int i, float p, float t);
+
+    void add_ray();
+
     void del_ray(int n); //delete
 private:
     int locator_id;
     ray* rays[10];
-    int ray_ammpount = 1;
-    vector<int> available_places = {1,2,3,4,5,6,7,8,9}; //sorted list of available cells in rays[10]
 
 };
 
