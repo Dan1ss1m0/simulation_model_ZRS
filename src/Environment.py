@@ -1,6 +1,9 @@
 from misc import *
-from Targets import target_typename_to_class
+from Trajectory import trajectory_typename_to_class
 from Projectiles import projectile_typename_to_class
+from Targets import Target
+
+# ToDo: выделить траектории в типы движения, а не в классы
 
 
 class Environment:
@@ -39,25 +42,29 @@ class Environment:
                 self.exploded_not_cleared_projectiles.append(projectile.id)
 
                 for target in self.targets.values():  # ракеты не связаны напрямую с целями, поэтому ищем вручную
-                    if dist(target.position, projectile.position) < projectile.explosion_distance:
+                    if dist(target.position, projectile.position) < projectile.explosion_range:
                         target.destroyed = True
                         self.exploded_not_cleared_targets.append(target.id)
 
+        # self.clear_exploded()
 
     def get_targets(self):
 
         return self.targets
 
-    def get_projectile(self):
+    def get_projectiles(self):
         return self.projectiles
 
-    def add_target(self, target_type, **kwargs):
+    def add_target(self, trajectory_type, **kwargs):
 
         if self.targets.get(kwargs['id']):
             print(f"error adding target {kwargs['id']}: target with such id already exists")
             return False
+
         try:
-            self.targets[kwargs['id']] = target_typename_to_class[target_type](**kwargs)
+            # print(kwargs['trajectory_arguments'])
+            trajectory = trajectory_typename_to_class[trajectory_type](**kwargs['trajectory_arguments'])
+            self.targets[kwargs['id']] = Target(kwargs['id'], trajectory)
 
         except Exception as e:
             print(f"adding target failed with exception: {e}")
