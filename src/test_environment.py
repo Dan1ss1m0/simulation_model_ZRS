@@ -1,6 +1,10 @@
 from Environment import Environment
 import numpy as np
+import logging
 import yaml
+
+logging.basicConfig(level=logging.INFO, filename="environment.log",filemode="w",
+                    format="%(asctime)s %(levelname)s: %(message)s")
 
 with open("./config.yaml", "r") as yamlfile:
     config = yaml.load(yamlfile, Loader=yaml.FullLoader)

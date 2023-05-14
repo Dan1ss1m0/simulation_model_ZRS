@@ -103,7 +103,8 @@ class TrajectoryComplex(Trajectory):
     def _change_trajectory(self):
 
         self.current_trajectory_number = (self.current_trajectory_number + 1) % len(self.trajectories)
-        self.trajectory_duration, trajectory_type, trajectory_arguments = self.trajectories[self.current_trajectory_number]
+
+        self.trajectory_duration, trajectory_type, trajectory_arguments = self.trajectories[self.current_trajectory_number].values()
 
         if trajectory_arguments.get('position', None) is None:
             trajectory_arguments['position'] = self.position
