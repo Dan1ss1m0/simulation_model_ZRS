@@ -51,3 +51,10 @@ for i in range(200):
     if not environment.projectiles or not environment.targets:
 
         break
+
+
+class Locator:
+
+    targets = {1: np.array([1, 1, 1]), }
+
+

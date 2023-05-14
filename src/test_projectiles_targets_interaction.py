@@ -69,4 +69,3 @@ while targets:
     for exploded_missile in exploded_missiles:
         del missiles[exploded_missile]
 
-

@@ -2,6 +2,8 @@ from misc import *
 from Targets import target_typename_to_class
 from Projectiles import projectile_typename_to_class
 
+# ToDo: выделить траектории в типы движения, а не в классы
+
 
 class Environment:
 
@@ -43,12 +45,13 @@ class Environment:
                         target.destroyed = True
                         self.exploded_not_cleared_targets.append(target.id)
 
+        self.clear_exploded()
 
     def get_targets(self):
 
         return self.targets
 
-    def get_projectile(self):
+    def get_projectiles(self):
         return self.projectiles
 
     def add_target(self, target_type, **kwargs):
