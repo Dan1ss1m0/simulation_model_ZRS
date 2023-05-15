@@ -5,21 +5,21 @@ from Environment import Environment
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import locator as loc
-T = 0.05
+T = 0.1
 time_step = T
 missile_base_position = (0, 0, 0)
 
 environment = Environment(None)
 
-environment.add_target('uniform', **dict(id=1, trajectory_arguments=dict(position=(2000, 0, 5000), velocity=(1000, 0, 3000))))
+environment.add_target('uniform', **dict(id=1, trajectory_arguments=dict(position=(2000, 0, 5000), velocity=(100, 0, 300))))
 environment.add_target('accelerating', **dict(trajectory_arguments=dict(position=(1000, 0, 1000), velocity=(0, 0, 0), acceleration=(10, 0, 20)), id=2))
-environment.add_target('circled', **dict(trajectory_arguments=dict(position=(4000, 0, 2000), velocity=(0, 0, 100), center=(200, 0, 200)), id=3))
+environment.add_target('circled', **dict(trajectory_arguments=dict(position=(4000, 0, 2000), velocity=(0, 0, 500), center=(2000, 0, 2000)), id=3))
 environment.add_target('complex', **dict(
     trajectory_arguments=dict(
         position=(8000, 0, 4000),
-        trajectories=[[2, 'uniform', {'position': None, 'velocity': (10, 10, 10)}],
-                      [2, 'uniform', {'position': None, 'velocity': (20, 0, 10)}],
-                      [4, 'circled', {'position': None, 'center': (100, 0, 100), 'velocity': (10, 0, 10)}],
+        trajectories=[[2, 'uniform', {'position': None, 'velocity': (100, 10, 100)}],
+                      [2, 'uniform', {'position': None, 'velocity': (-200, 0, 100)}],
+                      [4, 'circled', {'position': None, 'center': (7000, 0, 6000), 'velocity': (100, 0, 100)}],
                       [3, 'accelerating', {'position': None, 'velocity': None, 'acceleration': (-5, 0, -5)}]]
     ),
     id=4
@@ -40,14 +40,14 @@ for projectile_id, target in enumerate(environment.targets.values()):
 
     projectile_id_to_target_id[projectile_id] = target.id
 
-for i in range(200):
-
-    print(f"time passed: {time_step * (i + 1)}")
-
-    environment.update_targets(time_step)
-
-    for target in environment.targets.values():
-        print(f"\ttarget id: {target.id}; position: {np.round(target.position, 2)}; velocity: {np.round(target.velocity, 2)}")
+# for i in range(200):
+#
+#     print(f"time passed: {time_step * (i + 1)}")
+#
+#     environment.update_targets(time_step)
+#
+#     for target in environment.targets.values():
+#         print(f"\ttarget id: {target.id}; position: {np.round(target.position, 2)}; velocity: {np.round(target.velocity, 2)}")
 
     # environment.update_projectiles(time_step, {projectile_id:
     #     environment.targets[projectile_id_to_target_id[projectile_id]].position + np.random.normal(scale=0.000003, size=3)
@@ -64,13 +64,9 @@ for i in range(200):
     #
     # environment.clear_exploded()
 
-    if not environment.projectiles or not environment.targets:
-
-        break
-
-
-
-
+    # if not environment.projectiles or not environment.targets:
+    #
+    #     break
 
 class CC(object):
     def __init__(self):
@@ -149,7 +145,10 @@ fig, (ax,ax1)  = plt.subplots(1,2)
 fig.set_size_inches(10, 10)
 
 A = loc.locator(1000, 1000, 0)
+
+
 def animate(i):
+
     ax.clear()
     ax1.clear()
     ax1.grid(True)
@@ -167,7 +166,6 @@ def animate(i):
         ax1.scatter(x, z, color='green',
                 label='original', marker='o')
 
-
     environment.update_projectiles(time_step, {projectile_id:
                                                    environment.targets[projectile_id_to_target_id[
                                                        projectile_id]].position + np.random.normal(scale=0.000003,
@@ -183,7 +181,7 @@ def animate(i):
         else:
             print(f"\tmissile id: {projectile.id}; position: {projectile.position}")
 
-    environment.clear_exploded()
+    # environment.clear_exploded()
 
     #plt.waitforbuttonpress()
 
@@ -209,6 +207,8 @@ def animate(i):
     ax.set_ylim([0, 10000])
     ax1.set_xlim([0, 10000])
     ax1.set_ylim([0, 10000])
+
+
 ani = animation.FuncAnimation(fig, animate, 600,
                     interval=100, repeat=False)
 plt.show()
