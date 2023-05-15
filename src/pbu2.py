@@ -1,7 +1,9 @@
 from misc import *
+
 from Targets import Target
 from Launcher import *
 from Trajectory import trajectory_typename_to_class
+
 # пбу создаётся либо через файл, либо текстовую заглушку, 
 # принимает на вход: дистанцию между целями, ближе которой цель не будет добавлена и набор параметров
 
@@ -17,7 +19,6 @@ class Pbu:
     def __init__(self, initialization_type, add_distance: float, **kwargs):
 
         self.missle_id_counter = 0
-
         
         self.add_distance = add_distance
 
@@ -52,6 +53,7 @@ class Pbu:
                 new_id = max(self.targets.keys()) + 1
             else:
                 new_id = 0
+
             trajectory = trajectory_typename_to_class['uniform'](**dict(position=pos, velocity=(0,0,0)))
             self.targets[new_id] = Target(id = new_id, trajectory=trajectory)
         except Exception as e:
@@ -70,7 +72,6 @@ class Pbu:
             proj_id = self.launch(min_dist[1], self.missle_id_counter, pos, env)
             self.missle_id_counter += 1
             return new_id, proj_id
-        
 
     def add_launchers(self, **kwargs):
 
@@ -88,6 +89,7 @@ class Pbu:
         return True
 
     def clear_exploded(self, target_num):
+
         del self.targets[target_num]
 
     def initialize_with_file_data(self, config_path):

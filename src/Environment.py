@@ -8,15 +8,18 @@ from Targets import Target
 
 class Environment:
 
-    def __init__(self, initialization_type, **kwargs):
+    def __init__(self, initialization_type, config=None):
 
         self.targets = {}
         self.projectiles = {}
+        self.projectile_id_to_target_id = {}
 
         if initialization_type == 'config_file':
-            self.initialize_with_file_data(**kwargs)
-        else:
-            print("initializing with empty field")
+            init = self.initialize_with_file_data(config)
+            if init:
+                print("initialization performed using the config file")
+            else:
+                print("initializing with empty field")
 
         self.exploded_not_cleared_projectiles = []
         self.exploded_not_cleared_targets = []
@@ -62,7 +65,6 @@ class Environment:
             return False
 
         try:
-            # print(kwargs['trajectory_arguments'])
             trajectory = trajectory_typename_to_class[trajectory_type](**kwargs['trajectory_arguments'])
             self.targets[kwargs['id']] = Target(kwargs['id'], trajectory)
 
@@ -97,7 +99,26 @@ class Environment:
             del self.targets[target_id]
         self.exploded_not_cleared_targets.clear()
 
-    def initialize_with_file_data(self, config_path):
-        pass
+    def initialize_with_file_data(self, config):
 
-    # other types of initialization here
+        if config is None:
+            print(f"initialization error: config is not provided")
+            return False
+            
+        for item in config["targets"].items():
+            ids, params_dict = item
+            self.add_target(trajectory_type=params_dict["trajectory_type"],
+                            **dict(id=ids, trajectory_arguments=params_dict["trajectory_arguments"]))
+            
+        if len(self.targets) != 0:
+            for projectile_id, target in enumerate(self.targets.values()):
+                self.add_projectile(projectile_type=config["projectiles"]["class"],
+                                    id=projectile_id,
+                                    target=target.position + np.random.normal(scale=0.03, size=3),
+                                    **config["projectiles"]["parameters"])
+                self.projectile_id_to_target_id[projectile_id] = target.id
+        else:
+            print(f"initialization error: projectiles are not created, targets list is empty")
+            return False
+        
+        return True
