@@ -12,9 +12,9 @@ class Launcher:
     def launch(self, pos, missle_id_counter, env): # должна быть в private
         if (self.missile_amount != 0):
             self.missile_amount = self.missile_amount - 1
-            speed = 500
+            speed = 20000
             env.add_projectile('guided missile',
-                                       **dict(position=self.launcher_pos,
-                                              target=pos,  id=missle_id_counter, trigger_distance = 50.0,
-                                              explosion_range = 50.0,max_velocity = speed))
+                                       **dict(position=self.launcher_pos.copy(),
+                                              target=pos,  id=missle_id_counter, trigger_distance = 10.0,
+                                              explosion_range = 100.0,max_velocity = speed))
         return missle_id_counter

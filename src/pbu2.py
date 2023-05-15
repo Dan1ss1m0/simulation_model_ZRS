@@ -37,6 +37,7 @@ class Pbu:
             
     def update_targets(self, target_id, pos):
             self.targets[target_id].position = pos
+            print({target_id: target.position for target_id, target in self.targets.items()})
 
     def get_targets(self):
         return self.targets
@@ -61,18 +62,17 @@ class Pbu:
             print(f"adding target failed with exception: {e}")
             return -1, -1
         
-        # min_dist = [self.min_dist, 'nan']
+        min_dist = [1000000, 'nan']
         for launcher_id in self.launchers.keys():
             pos = pos if isinstance(pos, np.ndarray) else np.array(pos, dtype=np.float64)
             dist1 = [dist(self.launchers[launcher_id].launcher_pos, 
                           pos),launcher_id]
             
-            if (dist1[0] < self.min_dist) and (self.launchers[launcher_id].missile_amount > 0):
-                self.min_dist = dist1[0]
-                self.launcher_init_id = dist1[1]
+            if (dist1[0] < min_dist[0]) and (self.launchers[launcher_id].missile_amount > 0):
+                min_dist = dist1
 
-        if self.min_dist < 1e9:
-            proj_id = self.launch(self.launcher_init_id, new_id, pos, env)
+        if min_dist[0] < 1000000:
+            proj_id = self.launch(min_dist[1], new_id, pos, env)
             return new_id, proj_id
 
         else:
@@ -110,8 +110,6 @@ class Pbu:
             return False
 
         self.add_distance = config["add_distance"]
-        self.min_dist = config["min_dist"]
-        self.launcher_init_id = config["launcher_init_id"]
         for item in config["launchers"].items():
             ids, params_dict = item
             self.add_launchers(id=ids, **params_dict)
