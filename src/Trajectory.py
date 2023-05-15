@@ -70,6 +70,7 @@ class TrajectoryCircled(Trajectory):
         self.angle = np.arccos((self.position[0] - self.center[0]) / self.R)
 
         if np.abs(np.arcsin((self.position[2] - self.center[2]) / self.R) - self.angle) > 0.001:
+
             self.angle *= -1.
 
         self.angular_velocity = np.sqrt(np.sum(self.velocity ** 2)) / self.R
