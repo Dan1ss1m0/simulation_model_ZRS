@@ -38,7 +38,7 @@ for projectile_id, target in enumerate(environment.targets.values()):
         id=projectile_id,
         trigger_distance=5,
         explosion_range=10,
-        max_velocity=2000,
+        max_velocity=600,
         preemption=0.5
     ))
 
@@ -222,7 +222,8 @@ def animate(i):
     ax1.set_ylim([0, 10000])
 
 
-ani = animation.FuncAnimation(fig, animate, 600,
-                              interval=100, repeat=False)
+ani = animation.FuncAnimation(fig, animate, 200,
+                              interval=1, repeat=False)
+
 plt.show()
 plt.close()
