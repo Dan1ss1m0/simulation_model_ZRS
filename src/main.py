@@ -38,7 +38,7 @@ for projectile_id, target in enumerate(environment.targets.values()):
         id=projectile_id,
         trigger_distance=5,
         explosion_range=10,
-        max_velocity=400,
+        max_velocity=2000,
         preemption=0.5
     ))
 
