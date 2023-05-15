@@ -70,6 +70,7 @@ class TrajectoryCircled(Trajectory):
         self.angle = np.arccos((self.position[0] - self.center[0]) / self.R)
 
         if np.abs(np.arcsin((self.position[2] - self.center[2]) / self.R) - self.angle) > 0.001:
+
             self.angle *= -1.
 
         self.angular_velocity = np.sqrt(np.sum(self.velocity ** 2)) / self.R
@@ -105,9 +106,9 @@ class TrajectoryComplex(Trajectory):
         self.current_trajectory_number = (self.current_trajectory_number + 1) % len(self.trajectories)
         self.trajectory_duration, trajectory_type, trajectory_arguments = self.trajectories[self.current_trajectory_number]
 
-        if trajectory_arguments.get('position', None) is None:
-            trajectory_arguments['position'] = self.position
-        if trajectory_arguments.get('velocity', None) is None and self.current_trajectory_number != -1:
+        trajectory_arguments['position'] = self.position
+
+        if trajectory_arguments.get('velocity', None) is None:
             trajectory_arguments['velocity'] = self.current_trajectory.velocity
 
         self.current_trajectory = trajectory_typename_to_class[trajectory_type](**trajectory_arguments)
