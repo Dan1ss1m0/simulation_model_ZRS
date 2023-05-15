@@ -72,8 +72,10 @@ class Pbu:
             proj_id = self.launch(min_dist[1], self.missle_id_counter, pos, env)
             self.missle_id_counter += 1
             return new_id, proj_id
+
         else:
             return -1, -1
+
     def add_launchers(self, **kwargs):
 
         if self.launchers.get(kwargs['id']):

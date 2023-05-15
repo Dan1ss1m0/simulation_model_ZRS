@@ -37,19 +37,20 @@ environment.add_target('uniform', **dict(id=3, trajectory_arguments=dict(positio
                       [3, 'accelerating', {'position': None, 'velocity': None, 'acceleration': (-5, 0, -5)}]]
     ),
     id=4
+
 ))'''
 
 projectile_id_to_target_id = {}
 
 for projectile_id, target in enumerate(environment.targets.values()):
-
-    environment.add_projectile('guided missile', **dict(
+    environment.add_projectile('preemptive missile', **dict(
         position=missile_base_position,
         target=target.position + np.random.normal(scale=0.00003, size=3),
         id=projectile_id,
-        trigger_distance=0.1,
-        explosion_range=0.3,
-        max_velocity=100
+        trigger_distance=5,
+        explosion_range=10,
+        max_velocity=2000,
+        preemption=0.5
     ))
 
     projectile_id_to_target_id[projectile_id] = target.id
@@ -63,32 +64,24 @@ for projectile_id, target in enumerate(environment.targets.values()):
 #     for target in environment.targets.values():
 #         print(f"\ttarget id: {target.id}; position: {np.round(target.position, 2)}; velocity: {np.round(target.velocity, 2)}")
 
-    # environment.update_projectiles(time_step, {projectile_id:
-    #     environment.targets[projectile_id_to_target_id[projectile_id]].position + np.random.normal(scale=0.000003, size=3)
-    #     for projectile_id in environment.projectiles.keys()})
+# environment.update_projectiles(time_step, {projectile_id:
+#     environment.targets[projectile_id_to_target_id[projectile_id]].position + np.random.normal(scale=0.000003, size=3)
+#     for projectile_id in environment.projectiles.keys()})
 
-    # for projectile in environment.projectiles.values():
-    #     if projectile.exploded:
-    #         print(f"\tmissile {projectile.id} exploded in point {projectile.position} chasing target "
-    #               f"{projectile_id_to_target_id[projectile.id]} at position "
-    #               f"{environment.targets[projectile_id_to_target_id[projectile.id]].position}")
-    #
-    #     else:
-    #         print(f"\tmissile id: {projectile.id}; position: {projectile.position}")
-    #
-    # environment.clear_exploded()
+# for projectile in environment.projectiles.values():
+#     if projectile.exploded:
+#         print(f"\tmissile {projectile.id} exploded in point {projectile.position} chasing target "
+#               f"{projectile_id_to_target_id[projectile.id]} at position "
+#               f"{environment.targets[projectile_id_to_target_id[projectile.id]].position}")
+#
+#     else:
+#         print(f"\tmissile id: {projectile.id}; position: {projectile.position}")
+#
+# environment.clear_exploded()
 
-    # if not environment.projectiles or not environment.targets:
-    #
-    #     break
-
-class CC(object):
-    def __init__(self):
-        """Constructor"""
-        self.name = "PB"
-    def check(self):
-        A.add_ray(0,A.rays[0].phi, A.rays[0].teta,0)
-        A.state = A.state + 1
+# if not environment.projectiles or not environment.targets:
+#
+#     break
 
 class plane(object):
     """docstring"""
@@ -108,6 +101,7 @@ class plane(object):
         self.y0 = self.y0 + self.Vy * T
         self.x = self.x0
         self.y = self.y0
+
     def update(self,x,y,z):
         print('\n')
     def get_xyz(self):
@@ -150,11 +144,12 @@ plt.close()
 targ = []
 missle = []
 PBU = CC()
-mis1 = plane(222,-500,50,50)
-pl1 = plane(400,0,500,500)
+
+mis1 = plane(222, -500, 50, 50)
+pl1 = plane(400, 0, 500, 500)
 targ.append(pl1)
 missle.append(mis1)
-fig, (ax,ax1)  = plt.subplots(1,2)
+fig, (ax, ax1) = plt.subplots(1, 2)
 
 fig.set_size_inches(10, 10)
 
@@ -167,6 +162,7 @@ def animate(i):
     ax1.clear()
     ax1.grid(True)
     ax.grid(True)
+
     A.do_step(environment, pbu)
     xr = A.curr_ray_x
     yr = A.curr_ray_y
@@ -176,6 +172,7 @@ def animate(i):
              label='original', marker='s')
     ax.plot(A.curr_ray_x, A.curr_ray_y)
     ax1.plot(A.curr_ray_x, A.curr_ray_z)
+
     print(f"time passed: {time_step * (i + 1)}")
 
     environment.update_targets(time_step)
@@ -183,6 +180,13 @@ def animate(i):
     for target in environment.targets.values():
         print(
             f"\ttarget id: {target.id}; position: {np.round(target.position, 2)}; velocity: {np.round(target.velocity, 2)}")
+
+        [x, y, z] = target.position
+        ax.scatter(x, y, color='green',
+                   label='original', marker='o')
+        ax1.scatter(x, z, color='green',
+                    label='original', marker='o')
+
         [x,y,z] = target.position
         ax.scatter(x, y, color='green',
                  label='original', marker='o')
@@ -202,28 +206,33 @@ def animate(i):
                   f"{environment.targets[projectile_id_to_target_id[projectile.id]].position}")
 
         else:
+            [x, y, z] = projectile.position
             print(f"\tmissile id: {projectile.id}; position: {projectile.position}")
+            ax.scatter(x, y, color='red',
+                       label='original', marker='x')
+            ax1.scatter(x, z, color='red',
+                        label='original', marker='x')
 
     environment.clear_exploded()
 
-    #plt.waitforbuttonpress()
+    # plt.waitforbuttonpress()
 
+    # A.do_step(targ, PBU, missle)    # Plot that point using the x and y coordinates
+    # ax.plot(pl1.x0, pl1.y0, color='green',
+    # label='original', marker='o')
+    # ax1.plot(pl1.x0, pl1.z, color='green',
+    # label='original', marker='o')
+    # ax.plot(mis1.x0, mis1.z, color='red',
+    # label='original', marker='4')
+    # ax.plot(A.x, A.y, color='blue',
+    #  label='original', marker='s')
+    # ax1.plot(A.x, A.z, color='blue',
+    #  label='original', marker='s')
+    # xr = A.curr_ray_x
+    # yr = A.curr_ray_y
+    # ax.plot(A.curr_ray_x, A.curr_ray_y)
+    # ax1.plot(A.curr_ray_x, A.curr_ray_z)
 
-    #A.do_step(targ, PBU, missle)    # Plot that point using the x and y coordinates
-    #ax.plot(pl1.x0, pl1.y0, color='green',
-            #label='original', marker='o')
-    #ax1.plot(pl1.x0, pl1.z, color='green',
-           # label='original', marker='o')
-    #ax.plot(mis1.x0, mis1.z, color='red',
-            #label='original', marker='4')
-    #ax.plot(A.x, A.y, color='blue',
-          #  label='original', marker='s')
-    #ax1.plot(A.x, A.z, color='blue',
-          #  label='original', marker='s')
-    #xr = A.curr_ray_x
-    #yr = A.curr_ray_y
-    #ax.plot(A.curr_ray_x, A.curr_ray_y)
-    #ax1.plot(A.curr_ray_x, A.curr_ray_z)
     pl1.upd()
     mis1.upd()
     ax.set_xlim([0, 10000])
@@ -233,10 +242,6 @@ def animate(i):
 
 
 ani = animation.FuncAnimation(fig, animate, 600,
-                    interval=1, repeat=False)
+                              interval=100, repeat=False)
 plt.show()
 plt.close()
-
-
-
-
