@@ -1,5 +1,9 @@
 from misc import *
-from Targets import target_typename_to_class
+
+from Targets import Target
+from Launcher import *
+from Trajectory import trajectory_typename_to_class
+
 # пбу создаётся либо через файл, либо текстовую заглушку, 
 # принимает на вход: дистанцию между целями, ближе которой цель не будет добавлена и набор параметров
 
@@ -14,6 +18,7 @@ class Pbu:
 
     def __init__(self, initialization_type, add_distance: float, **kwargs):
 
+        self.missle_id_counter = 0
         
         self.add_distance = add_distance
 
@@ -30,11 +35,8 @@ class Pbu:
 
         self.exploded_not_cleared_targets = []
             
-    def update_targets(self, time_step):
-
-        for target in self.targets.values():
-            
-            target.update(time_step=time_step)
+    def update_targets(self, target_id, pos):
+            self.targets[target_id].position = pos
 
     def get_targets(self):
         return self.targets
@@ -42,32 +44,36 @@ class Pbu:
     def get_launchers(self):
         return self.launchers
 # добавление новых целей, нужно знать тип добавленной цели
-    def add_target(self, locator_id, pos):
+    def add_target(self,  pos, env):
         for target in self.targets.values():
             if dist(target.position, pos) < self.add_distance:
-                return False
+                return -1, -1
         try:
             if len(self.targets.keys()) > 0:
                 new_id = max(self.targets.keys()) + 1
             else:
                 new_id = 0
-            self.targets[new_id] = Target(new_id,pos,[0,0,0])
+
+            trajectory = trajectory_typename_to_class['uniform'](**dict(position=pos, velocity=(0,0,0)))
+            self.targets[new_id] = Target(id = new_id, trajectory=trajectory)
         except Exception as e:
             print(f"adding target failed with exception: {e}")
-            return False
+            return -1, -1
         
         min_dist = [1000000, 'nan']
         for launcher_id in self.launchers.keys():
-            dist1 = [dist(self.launchers[launcher_id].position, 
+            pos = pos if isinstance(pos, np.ndarray) else np.array(pos, dtype=np.float64)
+            dist1 = [dist(self.launchers[launcher_id].launcher_pos, 
                           pos),launcher_id]
             
-            if (dist1[0] < min_dist[0]) && (self.launchers[launcher_id].missile_amount > 0):
-                min_dist = [dist1,launcher_id]
-                
+            if (dist1[0] < min_dist[0]) and (self.launchers[launcher_id].missile_amount > 0):
+                min_dist = dist1
         if min_dist[0] < 1000000:
-            return new_id, launch(launchers[min_dist[1]], locator_id)
-        
-
+            proj_id = self.launch(min_dist[1], self.missle_id_counter, pos, env)
+            self.missle_id_counter += 1
+            return new_id, proj_id
+        else:
+            return -1, -1
     def add_launchers(self, **kwargs):
 
         if self.launchers.get(kwargs['id']):
@@ -83,12 +89,13 @@ class Pbu:
 
         return True
 
-    def clear_exploded(target_num):
+    def clear_exploded(self, target_num):
+
         del self.targets[target_num]
 
     def initialize_with_file_data(self, config_path):
         pass
     # other types of initialization here
-    
-    def launch(self, launcher_id, locator_id):
-        return self.launchers[launcher_id].missile_launch(target_pos, target_ID) # поменяется
+
+    def launch(self, launcher_id, missle_id_counter, pos, env):
+        return self.launchers[launcher_id].launch(pos, missle_id_counter, env)

@@ -1,25 +1,31 @@
 import numpy as np
 
 
-class Position(np.ndarray):
+class Target:
 
-    def length(self):
+    def __init__(self, position):
 
-        return np.sqrt(np.sum(self ** 2))
+        self.position = np.array(position, dtype=np.float64)
 
-    def __new__(cls, x, y, z, *args, **kwargs):
-
-        res = super().__new__(cls, shape=[3], *args, **kwargs)
-        res[0] = x
-        res[1] = y
-        res[2] = z
-
-        return res
-
-    def __array_finalize__(self, obj):
-        pass
+    def __repr__(self):
+        return str(self.position)
 
 
-position = Position(1, 1, 0)
+d = {1: Target((0, 0, 0)),
+     2: Target((1, 1, 1)),
+     3: Target((2, 2, 2))}
 
-print(position + 1)
+target = d.get(2, None)
+
+if target is None:
+    print("target doesn't exist")
+else:
+    print(target.position)
+
+print(list(d.values()))
+print(list(d.keys()))
+print(list(d.items()))
+
+for target_id, target in d.items():
+
+    print(target_id, target)
