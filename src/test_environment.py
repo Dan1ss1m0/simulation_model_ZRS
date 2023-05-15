@@ -1,10 +1,6 @@
 from Environment import Environment
 import numpy as np
-import logging
 import yaml
-
-logging.basicConfig(level=logging.INFO, filename="environment.log",filemode="w",
-                    format="%(asctime)s %(levelname)s: %(message)s")
 
 with open("./config.yaml", "r") as yamlfile:
     config = yaml.load(yamlfile, Loader=yaml.FullLoader)
@@ -23,11 +19,13 @@ for i in range(200):
 
     environment.update_projectiles(time_step, {projectile_id:
         environment.targets[environment.projectile_id_to_target_id[projectile_id]].position + np.random.normal(scale=0.03, size=3)
+
         for projectile_id in environment.projectiles.keys()})
 
     for projectile in environment.projectiles.values():
         if projectile.exploded:
             print(f"\tmissile {projectile.id} exploded in point {projectile.position} chasing target "
+
                   f"{environment.projectile_id_to_target_id[projectile.id]} at position "
                   f"{environment.targets[environment.projectile_id_to_target_id[projectile.id]].position}")
 
