@@ -52,6 +52,19 @@ class Environment:
 
         # self.clear_exploded()
 
+    def check_exploded(self):
+            
+        for projectile in self.projectiles.values():
+
+            if projectile.exploded:
+
+                self.exploded_not_cleared_projectiles.append(projectile.id)
+
+                for target in self.targets.values():  # ракеты не связаны напрямую с целями, поэтому ищем вручную
+                    if dist(target.position, projectile.position) < projectile.explosion_range:
+                        target.destroyed = True
+                        self.exploded_not_cleared_targets.append(target.id)
+
     def get_targets(self):
 
         return self.targets
@@ -113,15 +126,15 @@ class Environment:
             self.add_target(trajectory_type=params_dict["trajectory_type"],
                             **dict(id=ids, trajectory_arguments=params_dict["trajectory_arguments"]))
             
-        if len(self.targets) != 0:
-            for projectile_id, target in enumerate(self.targets.values()):
-                self.add_projectile(projectile_type=config["projectiles"]["class"],
-                                    id=projectile_id,
-                                    target=target.position + np.random.normal(scale=0.03, size=3),
-                                    **config["projectiles"]["parameters"])
-                self.projectile_id_to_target_id[projectile_id] = target.id
-        else:
-            logging.error(f"initialization error: projectiles are not created, targets list is empty")
-            return False
+        # if len(self.targets) != 0:
+        #     for projectile_id, target in enumerate(self.targets.values()):
+        #         self.add_projectile(projectile_type=config["projectiles"]["class"],
+        #                             id=projectile_id,
+        #                             target=target.position + np.random.normal(scale=0.03, size=3),
+        #                             **config["projectiles"]["parameters"])
+        #         self.projectile_id_to_target_id[projectile_id] = target.id
+        # else:
+        #     logging.error(f"initialization error: projectiles are not created, targets list is empty")
+        #     return False
         
         return True
