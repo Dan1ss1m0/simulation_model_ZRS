@@ -1,17 +1,16 @@
 from Environment import Environment
+from pbu2 import Pbu
+import yaml
 
 environment = Environment(None)
-from Launcher import Launcher
-from pbu2 import Pbu
 
-launcher_pos = (0, 0, 0)
-missile_amount = 5
+# нужно для тестирования добавления тагретов, не для инициализации класса ПБУ.
 pos = (50,50,50)
-add_distance = 1
-pbu = Pbu(None, add_distance)
 
-pbu.add_launchers(**dict(id=0, launcher_pos=launcher_pos, missile_amount=missile_amount))
+with open("./config.yaml", "r") as yamlfile:
+    config = yaml.load(yamlfile, Loader=yaml.FullLoader)
 
+pbu = Pbu('config_file', config["Pbu"])
 
 print(pbu.add_target(pos,environment))
 print(pbu.clear_exploded(0))

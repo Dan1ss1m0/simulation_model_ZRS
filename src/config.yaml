@@ -58,3 +58,12 @@ Environment:
             max_velocity: 5
 
     time_step: 0.01
+
+Pbu:
+    add_distance: 5
+    min_dist: 1.0e+9
+    launcher_init_id: null
+    launchers:
+        1:
+            launcher_pos: [0, 0, 0]
+            missile_amount: 5
