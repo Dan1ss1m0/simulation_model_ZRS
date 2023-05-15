@@ -73,6 +73,9 @@ class Pbu:
             self.missle_id_counter += 1
             return new_id, proj_id
 
+        else:
+            return -1, -1
+
     def add_launchers(self, **kwargs):
 
         if self.launchers.get(kwargs['id']):

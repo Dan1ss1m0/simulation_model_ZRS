@@ -5,18 +5,14 @@ from Targets import Target
 from Launcher import *
 # PARAMETRS#
 T = 0.005 #time step 0.1 second
-omega_az, omega_el, Rmax = 10, 5, 1000  # omega_az, omega_el - angular speed of the ray, Rmax - maximum distance of scanning
+omega_az, omega_el, Rmax = 15, 8, 2000  # omega_az, omega_el - angular speed of the ray, Rmax - maximum distance of scanning
 dr = 1
-ray_width = 4 / 180 * mth.pi  # width of the ray
+ray_width = 10 / 180 * mth.pi  # width of the ray
 Eps = 10  # minimal distance between plane and missle
 omega_el = omega_el * T
 omega_az = omega_az * T
-def find(id, list):
-    tmp = -1
-    for i in range(len(list)):
-        if list[i].id == id:
-            tmp = i
-    return tmp
+
+
 def sign(x):
     if x>0:
         return 1
@@ -91,26 +87,29 @@ class locator(object):
         return x, y, z
 
     def distance(self, target, x, y, z):
-        dist = mth.sqrt((target.x - x) ** 2 + (target.y - y) ** 2 + (target.z - z) ** 2)
+        [tx, ty, tz] = target.position
+        dist = mth.sqrt((tx - x) ** 2 + (ty - y) ** 2 + (tz - z) ** 2)
         return dist
 
-    def do_step(self, targets, PBU, missles):
+    def do_step(self, env, PBU):
+        targets = env.get_targets()
+        missles = env.get_projectiles()
         self.curr_ray_x = []
         self.curr_ray_y = []
         self.curr_ray_z = []
         if (self.state == 0):
             flag = False
             for r in range(0, Rmax, dr):
-                for i in range(len(targets)):
-                    x,y,z  = self.to_xyz(r)
+                for target_id, target in targets.items():
+                    [x,y,z]  = self.to_xyz(r)
                     self.curr_ray_x.append(x)
                     self.curr_ray_y.append(y)
                     self.curr_ray_z.append(z)
                     pos = np.array([x,y,z])
-                    if (self.distance(targets[i], x, y, z) < 1.1*mth.sqrt((r * mth.sin(ray_width))**2 +(2*dr)**2)):
-                        pbu_target_id, mis_id = PBU.add_target(pos)
+                    if (self.distance(target, x, y, z) < 1.1*mth.sqrt((r * mth.sin(ray_width))**2 +(2*dr)**2)):
+                        pbu_target_id, mis_id = PBU.add_target(pos, env)
                         if pbu_target_id !=-1:
-                            self.add_ray(self.rays[self.state].phi, self.rays[self.state].teta, mis_id,targets[i].id, pbu_target_id)
+                            self.add_ray(self.rays[self.state].phi, self.rays[self.state].teta, mis_id,target_id, pbu_target_id)
                         flag = True
                         break
                 if flag == True:
@@ -120,31 +119,31 @@ class locator(object):
             self.curr_ray_x = []
             self.curr_ray_y = []
             self.curr_ray_z = []
+            target = targets.get(self.rays[
+                self.state].target_id, None)
+            missle = missles.get(self.rays[
+                                     self.state].missle_id, None)
 
-            m_id = find(self.rays[
-                self.state].missle_id, missles)
-            id = find(self.rays[
-                self.state].target_id, targets)
-            if (m_id!=-1 and id !=-1):
-                [x, y, z] = missles[m_id].position()
+            if (target!=None and missle !=None):
+                [x, y, z] = target.position
                 Tx, Ty, Tz = self.to_xyz(100)
                 Tx = Tx - self.x
                 Ty = Ty - self.y
                 Tz = Tz - self.z
-                Vx = targets[id].x - self.x
-                Vy = targets[id].y - self.y
-                Vz = targets[id].z - self.z
+                Vx = x - self.x
+                Vy = y - self.y
+                Vz = z - self.z
                 d_phi = mth.acos(
                     (Tx * Vx + Ty * Vy) / (mth.sqrt(Tx ** 2 + Ty ** 2) * mth.sqrt(Vx ** 2 + Vy ** 2)))
-                d_teta = mth.asin((targets[id].z - self.z) / mth.sqrt(Vx ** 2 + Vy ** 2 + Vz ** 2)) - self.rays[
+                d_teta = mth.asin((z - self.z) / mth.sqrt(Vx ** 2 + Vy ** 2 + Vz ** 2)) - self.rays[
                     self.state].teta
                 self.rays[self.state].upd_coord(d_phi, d_teta)
                 for r in range(0, Rmax, dr):
                     x, y, z = self.to_xyz(r)
-                    if (self.distance(targets[id], x, y, z) < 1.1 * mth.sqrt(
+                    if (self.distance(target, x, y, z) < 1.1 * mth.sqrt(
                             (r * mth.sin(ray_width)) ** 2 + (2 * dr) ** 2)):
                         break
-                missles[m_id].update(T, np.array([x, y, z]))
+                missle.update(time_step=T, new_target=np.array([x, y, z]))
                 for r in range(0, Rmax, dr):
                     x, y, z = self.to_xyz(r)
                     self.curr_ray_x.append(x)
