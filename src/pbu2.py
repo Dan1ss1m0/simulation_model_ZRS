@@ -3,6 +3,7 @@ from misc import *
 from Targets import Target
 from Launcher import *
 from Trajectory import trajectory_typename_to_class
+from logs import logger
 
 # пбу создаётся либо через файл, либо текстовую заглушку, 
 # принимает на вход: дистанцию между целями, ближе которой цель не будет добавлена и набор параметров
@@ -29,15 +30,15 @@ class Pbu:
         if initialization_type == 'config_file':
             init = self.initialize_with_file_data(config)
             if init:
-                logging.info("initialization performed using the config file")
+                logger.info("Pbu: initialization performed using the config file")
             else:
-                logging.warning("initializing with empty field")
+                logger.warning("Pbu: initializing with empty field")
 
         self.exploded_not_cleared_targets = []
             
     def update_targets(self, target_id, pos):
             self.targets[target_id].position = pos
-            print({target_id: target.position for target_id, target in self.targets.items()})
+            # print({target_id: target.position for target_id, target in self.targets.items()})
 
     def get_targets(self):
         return self.targets
@@ -48,7 +49,7 @@ class Pbu:
     def add_target(self,  pos, env):
         for target in self.targets.values():
             if (dist(target.position, pos) < self.add_distance) or (dist(target.position+ target.position*self.time_step, pos) < self.add_distance):
-                print(f"add already existing target")
+                logger.info(f"Pbu: add already existing target")
                 return -1, -1
         try:
             if len(self.targets.keys()) > 0:
@@ -59,7 +60,7 @@ class Pbu:
             trajectory = trajectory_typename_to_class['uniform'](**dict(position=pos, velocity=(0,0,0)))
             self.targets[new_id] = Target(id = new_id, trajectory=trajectory)
         except Exception as e:
-            print(f"adding target failed with exception: {e}")
+            logger.error(f"Pbu: adding target failed with exception: {e}")
             return -1, -1
         
         min_dist = [1000000, 'nan']
@@ -76,23 +77,23 @@ class Pbu:
             return new_id, proj_id
 
         else:
-            print(f"no one nearest launcher")
+            logger.warning(f"Pbu: no one nearest launcher")
             return -1, -1
 
     def add_launchers(self, **kwargs):
 
         if self.launchers.get(kwargs['id']):
-            print(f"error adding launcher {kwargs['id']}: launcher with such id already exists")
+            logger.warning(f"Pbu: error adding launcher {kwargs['id']}: launcher with such id already exists")
             return False
 
         try:
             self.launchers[kwargs['id']] = Launcher(**kwargs)
 
         except Exception as e:
-            print(f"adding launcher failed with exception: {e}")
+            logger.error(f"Pbu: adding launcher failed with exception: {e}")
             return False
 
-        print(f"launcher {kwargs['id']} have been successfully set")
+        logger.info(f"Pbu: launcher {kwargs['id']} have been successfully set")
         return True
 
     def clear_exploded(self, target_num):
@@ -106,7 +107,7 @@ class Pbu:
     def initialize_with_file_data(self, config):
 
         if config is None:
-            logging.error(f"initialization error: config is not provided")
+            logger.error(f"Pbu: initialization error: config is not provided")
             return False
 
         self.time_step = config["time_step"]
