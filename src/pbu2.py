@@ -38,7 +38,6 @@ class Pbu:
             
     def update_targets(self, target_id, pos):
         self.targets[target_id].position = pos
-        # print({target_id: target.position for target_id, target in self.targets.items()})
 
     def get_targets(self):
         return self.targets
@@ -99,7 +98,6 @@ class Pbu:
     def clear_exploded(self, target_num):
 
         del self.targets[target_num]
-
     
     def launch(self, launcher_id, missle_id_counter, pos, env):
         return self.launchers[launcher_id].launch(pos, missle_id_counter, env)
