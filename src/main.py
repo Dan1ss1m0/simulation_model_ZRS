@@ -15,12 +15,15 @@ with open("./src/config.yaml", "r") as yamlfile:
 
 pbu = Pbu('config_file', config["Pbu"])
 environment = Environment('config_file', config["Environment"])
-A = Locator('config_file', config["Locator"])
+# A = Locator('config_file', config["Locator"])
+locators_num = list(config["Locator"].keys())
+locators = [Locator('config_file', config["Locator"][item]) for item in locators_num]
+
 
 time_step = config["Environment"]["time_step"]
 
 fig, (ax, ax1) = plt.subplots(1, 2)
-fig.set_size_inches(10, 10)
+fig.set_size_inches(12, 8)
 
 
 def animate(i):
@@ -30,15 +33,22 @@ def animate(i):
     ax1.grid(True)
     ax.grid(True)
 
-    A.do_step(environment, pbu)
-    xr = A.curr_ray_x
-    yr = A.curr_ray_y
-    ax.plot(A.x, A.y, color='blue',
+    for j, lctr in enumerate(locators):
+        # print(f"iteration number: {i}, {len(lctr.rays)}")
+        lctr.do_step(environment, pbu)
+        xr = lctr.curr_ray_x
+        yr = lctr.curr_ray_y
+        zr = lctr.curr_ray_z
+        ax.plot(lctr.x, lctr.y, color='blue',
             label='original', marker='s')
-    ax1.plot(A.x, A.z, color='blue',
+        ax1.plot(lctr.x, lctr.z, color='blue',
              label='original', marker='s')
-    ax.plot(A.curr_ray_x, A.curr_ray_y)
-    ax1.plot(A.curr_ray_x, A.curr_ray_z)
+        ax.plot(xr, yr)
+        ax1.plot(xr, zr)
+
+    for launcher in pbu.get_launchers().values():
+        ax.plot(launcher.launcher_pos[0], launcher.launcher_pos[1], marker='^', color='y')
+        ax.plot(launcher.launcher_pos[0], launcher.launcher_pos[2], marker='^', color='y')
 
     print(f"time passed: {time_step * (i + 1)}")
 
@@ -83,5 +93,8 @@ def animate(i):
 ani = animation.FuncAnimation(fig, animate, 1000,
                               interval=1, repeat=False)
 
+# ani.save('./1_0.gif')
+
 plt.show()
 plt.close()
+
