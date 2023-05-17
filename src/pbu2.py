@@ -16,37 +16,39 @@ from Trajectory import trajectory_typename_to_class
 #локатор заметил цель, передаёт три точки, пбу проверяет есть ли цель с похожими координатами
 class Pbu:
 
-    def __init__(self, initialization_type, add_distance: float, **kwargs):
+    def __init__(self, initialization_type, config=None):
 
-        self.missle_id_counter = 0
-        
-        self.add_distance = add_distance
-
+        self.add_distance = None
+        self.min_dist = None
+        self.launcher_init_id = None
         self.targets = {}
         # набор целей
-
         self.launchers = {}
         # набор ПУ
 
         if initialization_type == 'config_file':
-            self.initialize_with_file_data(**kwargs)
-        else:
-            print("initializing with empty field")
+            init = self.initialize_with_file_data(config)
+            if init:
+                logging.info("initialization performed using the config file")
+            else:
+                logging.warning("initializing with empty field")
 
         self.exploded_not_cleared_targets = []
             
     def update_targets(self, target_id, pos):
             self.targets[target_id].position = pos
+            print({target_id: target.position for target_id, target in self.targets.items()})
 
     def get_targets(self):
         return self.targets
     
     def get_launchers(self):
         return self.launchers
-# добавление новых целей, нужно знать тип добавленной цели
+
     def add_target(self,  pos, env):
         for target in self.targets.values():
-            if dist(target.position, pos) < self.add_distance:
+            if (dist(target.position, pos) < self.add_distance) or (dist(target.position+ target.position*self.time_step, pos) < self.add_distance):
+                print(f"add already existing target")
                 return -1, -1
         try:
             if len(self.targets.keys()) > 0:
@@ -68,10 +70,14 @@ class Pbu:
             
             if (dist1[0] < min_dist[0]) and (self.launchers[launcher_id].missile_amount > 0):
                 min_dist = dist1
+
         if min_dist[0] < 1000000:
-            proj_id = self.launch(min_dist[1], self.missle_id_counter, pos, env)
-            self.missle_id_counter += 1
+            proj_id = self.launch(min_dist[1], new_id, pos, env)
             return new_id, proj_id
+
+        else:
+            print(f"no one nearest launcher")
+            return -1, -1
 
     def add_launchers(self, **kwargs):
 
@@ -86,15 +92,27 @@ class Pbu:
             print(f"adding launcher failed with exception: {e}")
             return False
 
+        print(f"launcher {kwargs['id']} have been successfully set")
         return True
 
     def clear_exploded(self, target_num):
 
         del self.targets[target_num]
 
-    def initialize_with_file_data(self, config_path):
-        pass
-    # other types of initialization here
-
+    
     def launch(self, launcher_id, missle_id_counter, pos, env):
         return self.launchers[launcher_id].launch(pos, missle_id_counter, env)
+
+    def initialize_with_file_data(self, config):
+
+        if config is None:
+            logging.error(f"initialization error: config is not provided")
+            return False
+
+        self.time_step = config["time_step"]
+        self.add_distance = config["add_distance"]
+        for item in config["launchers"].items():
+            ids, params_dict = item
+            self.add_launchers(id=ids, **params_dict)
+
+        return True
