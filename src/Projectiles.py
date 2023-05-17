@@ -51,6 +51,7 @@ class Projectile:
             self.exploded = True
 
     def update(self, **kwargs):
+
         for func in self.update_functions:
             func(**kwargs)
 
@@ -67,6 +68,7 @@ class GuidedMissile(Projectile):
         self.velocity = calculate_velocity(self.position, self.target, self.max_velocity)
 
     def update(self, **kwargs):
+
         self.update_target(kwargs['new_target'])
         super().update(time_step=kwargs['time_step'])
 
@@ -87,6 +89,7 @@ class PreemptiveMissile(Projectile):
                                            self.max_velocity)
 
     def update(self, **kwargs):
+
         self.update_target(kwargs['new_target'])
         super().update(time_step=kwargs['time_step'])
 
