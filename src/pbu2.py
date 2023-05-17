@@ -37,8 +37,8 @@ class Pbu:
         self.exploded_not_cleared_targets = []
             
     def update_targets(self, target_id, pos):
-            self.targets[target_id].position = pos
-            # print({target_id: target.position for target_id, target in self.targets.items()})
+        self.targets[target_id].position = pos
+        # print({target_id: target.position for target_id, target in self.targets.items()})
 
     def get_targets(self):
         return self.targets

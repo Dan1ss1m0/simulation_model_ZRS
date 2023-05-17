@@ -73,7 +73,7 @@ def animate(i):
 
         else:
             [x, y, z] = projectile.position
-            print(f"\tmissile id: {projectile.id}; position: {projectile.position}")
+            print(f"\tmissile id: {projectile.id}; position: {projectile.position}; target: {projectile.target}")
             ax.scatter(x, y, color='red',
                        label='original', marker='x')
             ax1.scatter(x, z, color='red',
