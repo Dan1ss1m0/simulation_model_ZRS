@@ -164,6 +164,8 @@ def animate(i):
     ax.grid(True)
     print(f"time passed: {time_step * (i + 1)}")
 
+    plt.rcParams.update({'font.size': 9, 'font.weight': 'light'})
+
     environment.update_targets(time_step)
 
     for target in environment.targets.values():
@@ -172,8 +174,10 @@ def animate(i):
         [x, y, z] = target.position
         ax.scatter(x, y, color='green',
                    label='original', marker='o')
+        ax.annotate(f"id: {target.id}", xy=(x, y), xycoords='data', xytext=(-5, 4.), textcoords='offset points', style='italic')
         ax1.scatter(x, z, color='green',
                     label='original', marker='o')
+        ax1.annotate(f"id: {target.id}", xy=(x, z), xycoords='data', xytext=(-5, 4.), textcoords='offset points', style='italic')
 
     environment.update_projectiles(time_step, {projectile_id:
                                                    environment.targets[projectile_id_to_target_id[
@@ -192,8 +196,10 @@ def animate(i):
             print(f"\tmissile id: {projectile.id}; position: {projectile.position}")
             ax.scatter(x, y, color='red',
                        label='original', marker='x')
+            ax.annotate(f"id: {projectile.id}", xy=(x, y), xycoords='data', xytext=(-5, 4.), textcoords='offset points', style='italic')
             ax1.scatter(x, z, color='red',
                         label='original', marker='x')
+            ax1.annotate(f"id: {projectile.id}", xy=(x, z), xycoords='data', xytext=(-5, 4.), textcoords='offset points', style='italic')
 
     environment.clear_exploded()
 
