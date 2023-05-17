@@ -9,7 +9,7 @@ from locator import Locator
 from Launcher import Launcher
 from pbu2 import Pbu
 
-with open("./src/config.yaml", "r") as yamlfile:
+with open("./config.yaml", "r") as yamlfile:
     config = yaml.load(yamlfile, Loader=yaml.FullLoader)
 
 pbu = Pbu('config_file', config["Pbu"])
@@ -79,7 +79,7 @@ def animate(i):
 
         else:
             [x, y, z] = projectile.position
-            print(f"\tmissile id: {projectile.id}; position: {projectile.position}")
+            print(f"\tmissile id: {projectile.id}; position: {projectile.position}; target: {projectile.target}")
             ax.scatter(x, y, color='red',
                        label='original', marker='x')
             ax.annotate(f"id: {projectile.id}", xy=(x, y), xycoords='data', xytext=(-5, 4.), textcoords='offset points', style='italic')
