@@ -41,14 +41,14 @@ class TrackingRay(object):
         self.pbu_target_id = pbu_target_id
 
     def upd_coord(self, d_phi, d_teta):
-        self.phi = self.phi + 0.7*d_phi + (d_phi - self.err_phi) * 0
+        self.phi = self.phi + 0.7*d_phi + (d_phi - self.err_phi) * 0.3
         self.err_phi = d_phi
-        self.teta = self.teta + 0.7*d_teta + (d_teta - self.err_teta) * 0
+        self.teta = self.teta + 0.7*d_teta + (d_teta - self.err_teta) * 0.3
         self.err_teta = d_teta
 
 
 class Locator(object):
-    rays = []
+    # rays = []
     state = 0
     curr_ray_x = []
     curr_ray_y = []
@@ -63,6 +63,7 @@ class Locator(object):
             else:
                 logging.warning("initializing with empty field")
 
+        self.rays = []
         self.rays.append(Ray(self.omega_az, self.omega_el, self.r_max))
         self.state = 0
 
@@ -79,7 +80,7 @@ class Locator(object):
         self.omega_el = config["omega_el"] * config["time_step"]
         self.r_max = config["r_max"]
         self.dr = config["dr"]
-        self.ray_width = 10 / 100 * mth.pi
+        self.ray_width = 5 / 100 * mth.pi
 
         return True
 
@@ -108,6 +109,7 @@ class Locator(object):
         self.curr_ray_x = []
         self.curr_ray_y = []
         self.curr_ray_z = []
+
         if (self.state == 0):
             flag = False
             for r in range(0, self.r_max, self.dr):
@@ -135,7 +137,7 @@ class Locator(object):
             missle = missles.get(self.rays[
                                      self.state].missle_id, None)
 
-            if (target!=None and missle !=None):
+            if (target!=None and missle !=None and self.distance(target, self.x, self.y, self.z) < self.r_max):
                 [x, y, z] = target.position
                 Tx, Ty, Tz = self.to_xyz(100)
                 Tx = Tx - self.x
@@ -167,7 +169,6 @@ class Locator(object):
             else:
                 self.del_ray(self.state, PBU)
 
-        print(self.state)
         if self.state!=0:
             print(PBU.targets[self.rays[self.state].pbu_target_id].position)
 

@@ -125,16 +125,5 @@ class Environment:
             ids, params_dict = item
             self.add_target(trajectory_type=params_dict["trajectory_type"],
                             **dict(id=ids, trajectory_arguments=params_dict["trajectory_arguments"]))
-            
-        # if len(self.targets) != 0:
-        #     for projectile_id, target in enumerate(self.targets.values()):
-        #         self.add_projectile(projectile_type=config["projectiles"]["class"],
-        #                             id=projectile_id,
-        #                             target=target.position + np.random.normal(scale=0.03, size=3),
-        #                             **config["projectiles"]["parameters"])
-        #         self.projectile_id_to_target_id[projectile_id] = target.id
-        # else:
-        #     logging.error(f"initialization error: projectiles are not created, targets list is empty")
-        #     return False
         
         return True

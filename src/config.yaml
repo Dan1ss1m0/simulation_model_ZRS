@@ -4,7 +4,7 @@ Environment:
             trajectory_type: 'uniform'
             trajectory_arguments:
                 position: [4000, 4000, 150] # x, y, z
-                velocity: [300, 100, 0] # vx, vy, vz
+                velocity: [15000, 12000, 0] # vx, vy, vz
         1:
             trajectory_type: 'uniform'
             trajectory_arguments:
@@ -13,8 +13,8 @@ Environment:
         2:
             trajectory_type: 'uniform'
             trajectory_arguments:
-                position: [4500, 3000, 200] # x, y, z
-                velocity: [50, 300, 0] # vx, vy, vz
+                position: [4500, 4000, 200] # x, y, z
+                velocity: [10000, 5000, 0] # vx, vy, vz
         # 1:
         #     trajectory_type: 'accelerating'
         #     trajectory_arguments:
@@ -70,19 +70,36 @@ Environment:
     time_step: 0.001
 
 Pbu:
+    time_step: 0.001
     add_distance: 300
     launchers:
         1:
             launcher_pos: [3000, 3000, 0]
             missile_amount: 5
+            speed: 5000
+        2:
+            launcher_pos: [8000, 7000, 0]
+            missile_amount: 5
+            speed: 5000
 
-Locator: 
-    time_step: 0.005
-    coordinates:
-        x: 5000
-        y: 5000
-        z: 0
-    omega_az: 15
-    omega_el: 8
-    r_max: 2000
-    dr: 1
+Locator:
+    1:
+        time_step: 0.005
+        coordinates:
+            x: 4000
+            y: 5000
+            z: 0
+        omega_az: 15
+        omega_el: 8
+        r_max: 2000
+        dr: 1
+    2:
+        time_step: 0.005
+        coordinates:
+            x: 6000
+            y: 5000
+            z: 0
+        omega_az: 15
+        omega_el: 8
+        r_max: 2000
+        dr: 1

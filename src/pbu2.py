@@ -47,7 +47,7 @@ class Pbu:
 
     def add_target(self,  pos, env):
         for target in self.targets.values():
-            if dist(target.position, pos) < self.add_distance:
+            if (dist(target.position, pos) < self.add_distance) or (dist(target.position+ target.position*self.time_step, pos) < self.add_distance):
                 print(f"add already existing target")
                 return -1, -1
         try:
@@ -109,6 +109,7 @@ class Pbu:
             logging.error(f"initialization error: config is not provided")
             return False
 
+        self.time_step = config["time_step"]
         self.add_distance = config["add_distance"]
         for item in config["launchers"].items():
             ids, params_dict = item
