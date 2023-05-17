@@ -8,6 +8,10 @@ import yaml
 from locator import Locator
 from Launcher import Launcher
 from pbu2 import Pbu
+import random
+
+random.seed(228)
+
 
 with open("./config.yaml", "r") as yamlfile:
     config = yaml.load(yamlfile, Loader=yaml.FullLoader)
@@ -27,6 +31,8 @@ fig.set_size_inches(12, 8)
 
 def animate(i):
 
+    print(f"iteration {i + 1}")
+
     ax.clear()
     ax1.clear()
     ax1.grid(True)
@@ -40,6 +46,7 @@ def animate(i):
         zr = lctr.curr_ray_z
         ax.plot(lctr.x, lctr.y, color='blue',
             label='original', marker='s')
+        ax.text(0.05, 0.95, f"time: {np.round(time_step * i, 3)}")
         ax1.plot(lctr.x, lctr.z, color='blue',
              label='original', marker='s')
         ax.plot(xr, yr)
@@ -47,17 +54,13 @@ def animate(i):
 
     for launcher in pbu.get_launchers().values():
         ax.plot(launcher.launcher_pos[0], launcher.launcher_pos[1], marker='^', color='y')
-        ax.plot(launcher.launcher_pos[0], launcher.launcher_pos[2], marker='^', color='y')
-
-    print(f"time passed: {time_step * (i + 1)}")
+        ax1.plot(launcher.launcher_pos[0], launcher.launcher_pos[2], marker='^', color='y')
 
     plt.rcParams.update({'font.size': 9, 'font.weight': 'light'})
 
     environment.update_targets(time_step)
 
     for target in environment.targets.values():
-        print(
-            f"\ttarget id: {target.id}; position: {np.round(target.position, 2)}; velocity: {np.round(target.velocity, 2)}")
 
         [x, y, z] = target.position
         ax.scatter(x, y, color='green',
@@ -74,12 +77,9 @@ def animate(i):
                 label='original', marker='o')
 
     for projectile in environment.projectiles.values():
-        if projectile.exploded:
-            print(f"\tmissile {projectile.id} exploded in point {projectile.position}")
 
-        else:
+        if not projectile.exploded:
             [x, y, z] = projectile.position
-            print(f"\tmissile id: {projectile.id}; position: {projectile.position}; target: {projectile.target}")
             ax.scatter(x, y, color='red',
                        label='original', marker='x')
             ax.annotate(f"id: {projectile.id}", xy=(x, y), xycoords='data', xytext=(-5, 4.), textcoords='offset points', style='italic')
@@ -96,10 +96,9 @@ def animate(i):
     ax1.set_ylim([0, 10000])
 
 
-ani = animation.FuncAnimation(fig, animate, 1000,
+ani = animation.FuncAnimation(fig, animate, 700,
                               interval=1, repeat=False)
-# ani.save('./1_0.gif')
+ani.save('./2_0.gif', fps=60)
 
-plt.show()
-plt.close()
-
+# plt.show()
+# plt.close()
