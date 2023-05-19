@@ -168,10 +168,8 @@ class Locator(object):
                     self.curr_ray_y.append(y)
                     self.curr_ray_z.append(z)
             else:
-                missle.exploded = True
+                if missle:
+                    missle.exploded = True
                 self.del_ray(self.state, PBU)
 
-        # if self.state!=0:
-        #     print(PBU.targets[self.rays[self.state].pbu_target_id].position)
-
-        self.state = (self.state + 1) % len(self.rays)
+        # self.state = (self.state + 1) % len(self.rays)

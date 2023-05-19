@@ -80,6 +80,7 @@ class Environment:
 
         try:
             trajectory = trajectory_typename_to_class[trajectory_type](**kwargs['trajectory_arguments'])
+            print("hello")
             self.targets[kwargs['id']] = Target(kwargs['id'], trajectory)
 
         except Exception as e:
