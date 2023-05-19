@@ -3,11 +3,16 @@ from typing import Union
 from misc import *
 
 
-def calculate_velocity(position, target, max_velocity):
+def calculate_velocity(position, target, max_velocity, time_step=None):
 
     r = np.sqrt(np.sum((position - target) ** 2))
 
-    return max_velocity * (target - position) / r
+    velocity = max_velocity * (target - position) / r
+
+    if time_step is None or r >= np.sqrt(np.sum((velocity * time_step)**2)):
+        return velocity
+
+    return (target - position) / time_step
 
 
 class Projectile:
@@ -35,6 +40,8 @@ class Projectile:
 
     def _update_position(self, time_step: float):
 
+        self.velocity = calculate_velocity(self.position, self.target, self.max_velocity, time_step)
+
         if self.exploded:
             return
 
@@ -61,6 +68,7 @@ class GuidedMissile(Projectile):
         self.velocity = calculate_velocity(self.position, self.target, self.max_velocity)
 
     def update(self, **kwargs):
+
         self.update_target(kwargs['new_target'])
         super().update(time_step=kwargs['time_step'])
 
@@ -81,8 +89,10 @@ class PreemptiveMissile(Projectile):
                                            self.max_velocity)
 
     def update(self, **kwargs):
+
         self.update_target(kwargs['new_target'])
         super().update(time_step=kwargs['time_step'])
+
 
 projectile_typename_to_class = {
     'simple projectile': Projectile,

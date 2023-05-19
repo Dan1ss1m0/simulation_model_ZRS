@@ -64,20 +64,20 @@ class TrajectoryCircled(Trajectory):
 
         self.center = np.array(center, dtype=np.float64)
 
-        assert self.velocity[1] == 0
+        assert self.velocity[2] == 0
 
-        self.R = np.sqrt((self.position[0] - self.center[0]) ** 2 + (self.position[2] - self.center[2]) ** 2)
+        self.R = np.sqrt((self.position[0] - self.center[0]) ** 2 + (self.position[1] - self.center[1]) ** 2)
         self.angle = np.arccos((self.position[0] - self.center[0]) / self.R)
 
-        if np.abs(np.arcsin((self.position[2] - self.center[2]) / self.R) - self.angle) > 0.001:
+        if np.abs(np.arcsin((self.position[1] - self.center[1]) / self.R) - self.angle) > 0.001:
 
             self.angle *= -1.
 
         self.angular_velocity = np.sqrt(np.sum(self.velocity ** 2)) / self.R
-        if self.velocity[2]:
-            self.angular_velocity *= np.sign(-(self.center[0] - self.position[0]) / self.velocity[2])
+        if self.velocity[1]:
+            self.angular_velocity *= np.sign(-(self.center[0] - self.position[0]) / self.velocity[1])
         else:
-            self.angular_velocity *= np.sign((self.center[2] - self.position[2]) / self.velocity[0])
+            self.angular_velocity *= np.sign((self.center[1] - self.position[1]) / self.velocity[0])
 
     def _update_position(self, time_step: float):
 
@@ -85,7 +85,7 @@ class TrajectoryCircled(Trajectory):
 
         new_position = self.position.copy()
         new_position[0] = self.R * np.cos(self.angle) + self.center[0]
-        new_position[2] = self.R * np.sin(self.angle) + self.center[2]
+        new_position[1] = self.R * np.sin(self.angle) + self.center[1]
 
         self.velocity = (new_position - self.position) / time_step
         self.position = new_position
@@ -104,11 +104,11 @@ class TrajectoryComplex(Trajectory):
     def _change_trajectory(self):
 
         self.current_trajectory_number = (self.current_trajectory_number + 1) % len(self.trajectories)
-        self.trajectory_duration, trajectory_type, trajectory_arguments = self.trajectories[self.current_trajectory_number]
+        self.trajectory_duration, trajectory_type, trajectory_arguments = self.trajectories[self.current_trajectory_number].values()
 
-        if trajectory_arguments.get('position', None) is None:
-            trajectory_arguments['position'] = self.position
-        if trajectory_arguments.get('velocity', None) is None and self.current_trajectory_number != -1:
+        trajectory_arguments['position'] = self.position
+
+        if trajectory_arguments.get('velocity', None) is None:
             trajectory_arguments['velocity'] = self.current_trajectory.velocity
 
         self.current_trajectory = trajectory_typename_to_class[trajectory_type](**trajectory_arguments)

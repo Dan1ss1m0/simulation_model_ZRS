@@ -2,6 +2,7 @@ from misc import *
 from Trajectory import trajectory_typename_to_class
 from Projectiles import projectile_typename_to_class
 from Targets import Target
+from logs import logger
 
 # ToDo: выделить траектории в типы движения, а не в классы
 
@@ -17,9 +18,9 @@ class Environment:
         if initialization_type == 'config_file':
             init = self.initialize_with_file_data(config)
             if init:
-                print("initialization performed using the config file")
+                logger.info("Environment: initialization performed using the config file")
             else:
-                print("initializing with empty field")
+                logger.warning("Environment: initializing with empty field")
 
         self.exploded_not_cleared_projectiles = []
         self.exploded_not_cleared_targets = []
@@ -37,7 +38,7 @@ class Environment:
             if projectile.id in new_targets.keys():
                 projectile.update(time_step=time_step, new_target=new_targets[projectile.id])
             else:
-                print(f"for projectile {projectile.id} wasn't provided new target")
+                logger.warning(f"Environment: for projectile {projectile.id} wasn't provided new target")
                 projectile.update(time_step=time_step, new_target=projectile.target)
 
             if projectile.exploded:
@@ -51,6 +52,19 @@ class Environment:
 
         # self.clear_exploded()
 
+    def check_exploded(self):
+            
+        for projectile in self.projectiles.values():
+
+            if projectile.exploded:
+
+                self.exploded_not_cleared_projectiles.append(projectile.id)
+
+                for target in self.targets.values():  # ракеты не связаны напрямую с целями, поэтому ищем вручную
+                    if dist(target.position, projectile.position) < projectile.explosion_range:
+                        target.destroyed = True
+                        self.exploded_not_cleared_targets.append(target.id)
+
     def get_targets(self):
 
         return self.targets
@@ -61,32 +75,35 @@ class Environment:
     def add_target(self, trajectory_type, **kwargs):
 
         if self.targets.get(kwargs['id']):
-            print(f"error adding target {kwargs['id']}: target with such id already exists")
+            logger.error(f"Environment: error adding target {kwargs['id']}: target with such id already exists")
             return False
 
         try:
             trajectory = trajectory_typename_to_class[trajectory_type](**kwargs['trajectory_arguments'])
+            print("hello")
             self.targets[kwargs['id']] = Target(kwargs['id'], trajectory)
 
         except Exception as e:
-            print(f"adding target failed with exception: {e}")
+            logger.error(f"Environment: adding target failed with exception: {e}")
             return False
-
+        
+        logger.info(f"Environment: target {kwargs['id']} have been successfully set")
         return True
 
     def add_projectile(self, projectile_type, **kwargs):
 
         if self.projectiles.get(kwargs['id']):
-            print(f"error adding projectile {kwargs['id']}: projectile with such id already exists")
+            logger.error(f"Environment: error adding projectile {kwargs['id']}: projectile with such id already exists")
             return False
 
         try:
             self.projectiles[kwargs['id']] = projectile_typename_to_class[projectile_type](**kwargs)
 
         except Exception as e:
-            print(f"adding projectile failed with exception: {e}")
+            logger.error(f"Environment: adding projectile failed with exception: {e}")
             return False
 
+        logger.info(f"Environment: projectile {kwargs['id']} have been successfully set")
         return True
 
     def clear_exploded(self):
@@ -102,23 +119,12 @@ class Environment:
     def initialize_with_file_data(self, config):
 
         if config is None:
-            print(f"initialization error: config is not provided")
+            logger.error(f"Environment: initialization error: config is not provided")
             return False
             
         for item in config["targets"].items():
             ids, params_dict = item
             self.add_target(trajectory_type=params_dict["trajectory_type"],
                             **dict(id=ids, trajectory_arguments=params_dict["trajectory_arguments"]))
-            
-        if len(self.targets) != 0:
-            for projectile_id, target in enumerate(self.targets.values()):
-                self.add_projectile(projectile_type=config["projectiles"]["class"],
-                                    id=projectile_id,
-                                    target=target.position + np.random.normal(scale=0.03, size=3),
-                                    **config["projectiles"]["parameters"])
-                self.projectile_id_to_target_id[projectile_id] = target.id
-        else:
-            print(f"initialization error: projectiles are not created, targets list is empty")
-            return False
         
         return True
