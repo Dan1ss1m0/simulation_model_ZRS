@@ -3,6 +3,7 @@ import math as mth
 from misc import *
 from Targets import Target
 from Launcher import *
+from logs import logger
 
 def sign(x):
     if x>0:
@@ -59,9 +60,9 @@ class Locator(object):
         if initialization_type == 'config_file':
             init = self.initialize_with_file_data(config)
             if init:
-                logging.info("initialization performed using the config file")
+                logger.info("Locator: initialization performed using the config file")
             else:
-                logging.warning("initializing with empty field")
+                logger.warning("Locator: initializing with empty field")
 
         self.rays = []
         self.rays.append(Ray(self.omega_az, self.omega_el, self.r_max))
@@ -71,7 +72,7 @@ class Locator(object):
     def initialize_with_file_data(self, config):
 
         if config is None:
-            logging.error(f"initialization error: config is not provided")
+            logger.error(f"Locator: initialization error: config is not provided")
             return False
 
         self.x, self.y, self.z = config["coordinates"].values()
@@ -171,4 +172,4 @@ class Locator(object):
                     missle.exploded = True
                 self.del_ray(self.state, PBU)
 
-        self.state = (self.state + 1) % len(self.rays)
+        # self.state = (self.state + 1) % len(self.rays)

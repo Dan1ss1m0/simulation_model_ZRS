@@ -2,9 +2,6 @@ from Targets import *
 from Projectiles import *
 from Trajectory import *
 from Environment import Environment
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
-import yaml
 from locator import Locator
 from Launcher import Launcher
 from pbu2 import Pbu
@@ -13,24 +10,24 @@ import random
 random.seed(42)
 
 
-with open("./config.yaml", "r") as yamlfile:
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+import yaml
+
+with open("./src/config.yaml", "r") as yamlfile:
     config = yaml.load(yamlfile, Loader=yaml.FullLoader)
 
 pbu = Pbu('config_file', config["Pbu"])
 environment = Environment('config_file', config["Environment"])
-# A = Locator('config_file', config["Locator"])
 locators_num = list(config["Locator"].keys())
 locators = [Locator('config_file', config["Locator"][item]) for item in locators_num]
-
 
 time_step = config["Environment"]["time_step"]
 
 fig, (ax, ax1) = plt.subplots(1, 2)
 fig.set_size_inches(12, 8)
 
-
 skip_frames = 5
-
 
 def animate(i):
 
